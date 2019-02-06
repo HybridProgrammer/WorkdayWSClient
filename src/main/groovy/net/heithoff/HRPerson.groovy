@@ -1,20 +1,12 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
-import workday.com.bsvc.GetWorkersRequestType
-import workday.com.bsvc.GetWorkersResponseType
-import workday.com.bsvc.ResponseFilterType
-import workday.com.bsvc.WorkerResponseGroupType
-import workday.com.bsvc.WorkerType
+import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
-import workday.com.bsvc.human_resources.HumanResourcesService
 import workday.com.bsvc.human_resources.ProcessingFaultMsg
 import workday.com.bsvc.human_resources.ValidationFaultMsg
 
 import javax.xml.datatype.DatatypeConfigurationException
-import javax.xml.datatype.DatatypeFactory
-import javax.xml.datatype.XMLGregorianCalendar
-import javax.xml.ws.BindingProvider
 
 @Slf4j
 class HRPerson {
@@ -32,11 +24,25 @@ class HRPerson {
         log.info("works")
     }
 
-    static def findById(String id) {
-        String type = App.config().getProperty("HRPerson.default.id.type") ?: "WID"
-        def resources = workdayClientService.getResources("Human_Resources")
+    static def findByAcadmeicAppointee(String id) {
+        try {
+            String type = App.config().getProperty("HRPerson.default.id.type") ?: "WID"
+            def resources = workdayClientService.getResources("Human_Resources")
 
+            AcademicAppointeeRequestReferencesType reference = new AcademicAppointeeRequestReferencesType()
+            reference.academicAppointeeReference.push(new AcademicAppointeeEnabledObjectIDType(type: type, value: id))
 
+            GetAcademicAppointeeRequestType request = new GetAcademicAppointeeRequestType()
+            request.setVersion(workdayClientService.version)
+            request.requestReferences = reference
+
+            GetAcademicAppointeeResponseType response = ((HumanResourcesPort) resources["port"]).getAcademicAppointee(request)
+
+            return new HRPerson(response.getResponseData().academicAppointee.first())
+        } catch(Exception e) {
+            log.error(e.message)
+            throw e
+        }
     }
 
     static def findAll() {
@@ -102,5 +108,14 @@ class HRPerson {
         } catch (DatatypeConfigurationException e) {
             e.printStackTrace()
         }
+    }
+
+
+    @Override
+    public String toString() {
+        return "HRPerson{" +
+                "person=" + person +
+                ", descriptor='" + descriptor + '\'' +
+                '}';
     }
 }
