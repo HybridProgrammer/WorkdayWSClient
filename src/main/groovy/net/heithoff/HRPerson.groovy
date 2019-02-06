@@ -16,6 +16,14 @@ import javax.xml.datatype.XMLGregorianCalendar
 import javax.xml.ws.BindingProvider
 
 class HRPerson {
+    WorkerType person
+    String descriptor
+
+    HRPerson(WorkerType workerType) {
+        person = workerType
+        descriptor = person.getWorkerReference().getDescriptor()
+    }
+
     public static void main(String[] args) {
         App app = new App("/Users/jheithof/workday_ws_client.test.properties")
         HRPerson.findAll()
@@ -55,6 +63,7 @@ class HRPerson {
             GregorianCalendar cal = new GregorianCalendar();
             XMLGregorianCalendar xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
 
+            List<HRPerson> people = []
             // Loop over all of the pages in the web service response
             while (totalPages >= currentPage) {
                 // Create a "request" object
@@ -87,6 +96,8 @@ class HRPerson {
 
                     System.out.println(worker.getWorkerReference()
                             .getDescriptor());
+                    HRPerson person = new HRPerson(worker)
+                    people.add(person)
 
                 }
 
@@ -98,6 +109,8 @@ class HRPerson {
                 }
                 currentPage++;
             }
+
+            return people
 
         } catch (Exception e) {
             e.printStackTrace()
