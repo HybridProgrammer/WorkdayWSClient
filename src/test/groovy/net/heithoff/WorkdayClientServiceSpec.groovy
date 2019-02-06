@@ -27,7 +27,7 @@ class WorkdayClientServiceSpec extends Specification {
         workdayClientService.wdPassword == "your_password"
         workdayClientService.tenant == "your_tenant"
         workdayClientService.host == "your-impl-services1.workday.com"
-        workdayClientService.version == "30.2"
+        workdayClientService.version == "v30.2"
     }
 
     def "test getServiceUrl"() {

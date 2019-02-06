@@ -32,34 +32,21 @@ class HRPerson {
         log.info("works")
     }
 
+    static def findById(String id) {
+        String type = App.config().getProperty("HRPerson.default.id.type") ?: "WID"
+        def resources = workdayClientService.getResources("Human_Resources")
+
+
+    }
+
     static def findAll() {
         try {
 
-            // final String wdEndpoint =
-            // "https://e2-impl-cci.workday.com/ccx/service/exampleTenant/Human_Resources/v16";
-            String wdEndpoint = workdayClientService.getServiceUrl("Human_Resources")
-
-            log.debug("Starting...")
-
-            // Create the Web Service client stub
-            HumanResourcesService service = new HumanResourcesService()
-            HumanResourcesPort port = service.getHumanResources()
-
-            // Add the WorkdayCredentials handler to the client stub
-            WorkdayCredentials.addWorkdayCredentials((BindingProvider) port, workdayClientService.wdUser, workdayClientService.wdPassword)
-
-            // Assign the Endpoint URL
-            Map<String, Object> requestContext = ((BindingProvider) port).getRequestContext()
-            requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, wdEndpoint)
+            def resources = workdayClientService.getResources("Human_Resources")
 
             // Define the paging defaults
-            final int countSize = 200
-            int totalPages = 1
-            int currentPage = 1
-
-            // Set the current date/time
-            GregorianCalendar cal = new GregorianCalendar()
-            XMLGregorianCalendar xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal)
+            BigDecimal totalPages = 1
+            BigDecimal currentPage = 1
 
             List<HRPerson> people = []
             // Loop over all of the pages in the web service response
@@ -71,11 +58,7 @@ class HRPerson {
                 request.setVersion("v10")
 
                 // Set the date/time & page parameters in the request
-                ResponseFilterType responseFilter = new ResponseFilterType()
-                responseFilter.setAsOfEntryDateTime(xmlCal)
-                responseFilter.setAsOfEffectiveDate(xmlCal)
-                responseFilter.setPage(BigDecimal.valueOf(currentPage))
-                responseFilter.setCount(BigDecimal.valueOf(countSize))
+                ResponseFilterType responseFilter = workdayClientService.getDefaultResponseFilterType(currentPage)
                 request.setResponseFilter(responseFilter)
 
                 // Set the desired response group(s) to return
@@ -84,7 +67,7 @@ class HRPerson {
                 request.setResponseGroup(responseGroup)
 
                 // Submit the request creating the "response" object
-                GetWorkersResponseType response = port.getWorkers(request)
+                GetWorkersResponseType response = ((HumanResourcesPort) resources["port"]).getWorkers(request)
 
                 // Display all Workers
                 Iterator<WorkerType> i = response.getResponseData().getWorker()
