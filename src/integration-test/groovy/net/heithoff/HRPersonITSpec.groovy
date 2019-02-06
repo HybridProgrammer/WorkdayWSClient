@@ -7,7 +7,6 @@ import spock.lang.Specification
 class HRPersonITSpec extends Specification {
 
     def setupSpec() {
-        App app = new App("/Users/jheithof/workday_ws_client.test.properties")
     }
 
     def "test Spock"() {
