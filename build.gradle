@@ -1,0 +1,43 @@
+buildscript{
+    repositories{
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'no.nils:wsdl2java:0.10'
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'java'
+    id "no.nils.wsdl2java" version "0.10"
+}
+
+group 'net.heithoff'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+wsdl2javaExt {
+    deleteGeneratedSourcesOnClean = true
+}
+
+wsdl2java {
+    generatedWsdlDir = file("workday-generated-sources")  // target directory for generated source code
+    wsdlDir = file("src/main/resources/wsdl") // define to support incremental build
+    wsdlsToGenerate = [   //  2d-array of wsdls and cxf-parameters
+                          ['src/main/resources/wsdl/Human_Resources.wsdl'],
+                          //['-xjc','-b','bindingfile.xml','src/main/resources/wsdl/secondwsdl.wsdl']
+    ]
+    locale = Locale.US
+}
