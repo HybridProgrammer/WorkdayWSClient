@@ -1,5 +1,6 @@
 package net.heithoff
 
+import groovy.util.logging.Slf4j
 import workday.com.bsvc.GetWorkersRequestType
 import workday.com.bsvc.GetWorkersResponseType
 import workday.com.bsvc.ResponseFilterType
@@ -15,6 +16,7 @@ import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 import javax.xml.ws.BindingProvider
 
+@Slf4j
 class HRPerson {
     static WorkdayClientService workdayClientService = new WorkdayClientService()
     WorkerType person
@@ -27,7 +29,7 @@ class HRPerson {
 
     public static void main(String[] args) {
         HRPerson.findAll()
-        println "works"
+        log.info("works")
     }
 
     static def findAll() {
@@ -37,7 +39,7 @@ class HRPerson {
             // "https://e2-impl-cci.workday.com/ccx/service/exampleTenant/Human_Resources/v16";
             final String wdEndpoint = App.config().getProperty("wdEndpoint")
 
-            System.out.println("Starting...")
+            log.debug("Starting...")
 
             // Create the Web Service client stub
             HumanResourcesService service = new HumanResourcesService()
