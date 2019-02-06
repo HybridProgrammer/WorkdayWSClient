@@ -37,7 +37,7 @@ class HRPerson {
 
             // final String wdEndpoint =
             // "https://e2-impl-cci.workday.com/ccx/service/exampleTenant/Human_Resources/v16";
-            final String wdEndpoint = App.config().getProperty("wdEndpoint")
+            String wdEndpoint = workdayClientService.getServiceUrl("Human_Resources")
 
             log.debug("Starting...")
 
