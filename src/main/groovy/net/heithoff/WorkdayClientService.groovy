@@ -32,7 +32,7 @@ class WorkdayClientService {
         tenant = App.config().getProperty("tenant")
         wdUser = "${username}@${tenant}"
         host = App.config().getProperty("host")
-        version = App.config().getProperty("host")
+        version = App.config().getProperty("version")
     }
 
     def getServiceUrl(String service) {
