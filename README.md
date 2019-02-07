@@ -32,6 +32,19 @@ List<HRPerson> people = HRPerson.findAll()
 
 ```
 
+# Sample Config
+```$xslt
+username = "wd_username"
+password = 'your_password'
+tenant = "your_tenant"
+version = "30.2"
+host = "your-impl-services1.workday.com"
+
+HRPerson.default.id.type = "WID"
+
+wdUser = "${username}@${tenant}"
+
+```
 
 # Helpful tips for debugging
 Run with to see soap messages
