@@ -14,14 +14,17 @@ class HRPerson {
     WorkerType person
     AcademicAppointeeType academicAppointeeType
     String descriptor
+    String wid
 
     HRPerson(WorkerType workerType) {
         person = workerType
         descriptor = person.getWorkerReference().getDescriptor()
+        wid = workerType.workerReference.ID.properties.get("WID")
     }
 
     HRPerson(AcademicAppointeeType academicAppointeeType) {
         descriptor = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData.formattedName
+        wid = academicAppointeeType.academicAppointeeReference.id.find { it.type == "WID"}
     }
 
     public static void main(String[] args) {
@@ -131,8 +134,23 @@ class HRPerson {
     @Override
     public String toString() {
         return "HRPerson{" +
-                "person=" + person +
-                ", descriptor='" + descriptor + '\'' +
+                "descriptor='" + descriptor + '\'' +
+                ", wid='" + wid + '\'' +
                 '}';
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        HRPerson hrPerson = (HRPerson) o
+
+        if (wid != hrPerson.wid) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (wid != null ? wid.hashCode() : 0)
     }
 }

@@ -25,11 +25,22 @@ class HRPersonITSpec extends Specification {
     }
 
     def "test findByAcadmeicAppointee"() {
-        when:
-        HRPerson person = HRPerson.findByAcadmeicAppointee(App.properties().get("test.findByAcadmeicAppointee.wid.id").toString())
-        println person
+        when: "we want to search by WID"
+        String wid = App.properties().get("test.findByAcadmeicAppointee.wid.id").toString()
+        HRPerson person1 = HRPerson.findByAcadmeicAppointee(wid)
+        println person1
 
         then:
-        person
+        person1
+
+        when: "we want to search by custom_ref"
+        String id = App.properties().get("test.findByAcadmeicAppointee.custom_ref.id").toString()
+        String type = App.properties().get("test.findByAcadmeicAppointee.custom_ref.type").toString()
+        HRPerson person2 = HRPerson.findByAcadmeicAppointee(id, type)
+        println person2
+
+        then:
+        person2
+        person1 == person2
     }
 }
