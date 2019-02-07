@@ -12,11 +12,16 @@ import javax.xml.datatype.DatatypeConfigurationException
 class HRPerson {
     static WorkdayClientService workdayClientService = new WorkdayClientService()
     WorkerType person
+    AcademicAppointeeType academicAppointeeType
     String descriptor
 
     HRPerson(WorkerType workerType) {
         person = workerType
         descriptor = person.getWorkerReference().getDescriptor()
+    }
+
+    HRPerson(AcademicAppointeeType academicAppointeeType) {
+        descriptor = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData.formattedName
     }
 
     public static void main(String[] args) {
@@ -26,11 +31,23 @@ class HRPerson {
 
     static def findByAcadmeicAppointee(String id) {
         try {
-            String type = App.config().getProperty("HRPerson.default.id.type") ?: "WID"
+            String type = App.config().getProperty("HRPerson.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
+
+            return findByAcadmeicAppointee(id, type)
+        } catch (Exception e) {
+            log.error(e.message)
+            throw e
+        }
+    }
+
+    static def findByAcadmeicAppointee(String id, String type) {
+        try {
             def resources = workdayClientService.getResources("Human_Resources")
 
             AcademicAppointeeRequestReferencesType reference = new AcademicAppointeeRequestReferencesType()
-            reference.academicAppointeeReference.push(new AcademicAppointeeEnabledObjectIDType(type: type, value: id))
+            AcademicAppointeeEnabledObjectType refType = new AcademicAppointeeEnabledObjectType()
+            refType.ID.add(new AcademicAppointeeEnabledObjectIDType(type: type, value: id))
+            reference.academicAppointeeReference.add(refType)
 
             GetAcademicAppointeeRequestType request = new GetAcademicAppointeeRequestType()
             request.setVersion(workdayClientService.version)
@@ -39,7 +56,7 @@ class HRPerson {
             GetAcademicAppointeeResponseType response = ((HumanResourcesPort) resources["port"]).getAcademicAppointee(request)
 
             return new HRPerson(response.getResponseData().academicAppointee.first())
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error(e.message)
             throw e
         }
