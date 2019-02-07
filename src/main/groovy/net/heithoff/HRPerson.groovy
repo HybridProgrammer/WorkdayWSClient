@@ -31,7 +31,7 @@ class HRPerson {
 
     static def findByAcadmeicAppointee(String id) {
         try {
-            String type = App.config().getProperty("HRPerson.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
+            String type = App.properties().get("HRPerson.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
 
             return findByAcadmeicAppointee(id, type)
         } catch (Exception e) {

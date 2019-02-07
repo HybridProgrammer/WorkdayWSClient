@@ -7,6 +7,7 @@ import spock.lang.Specification
 class HRPersonITSpec extends Specification {
 
     def setupSpec() {
+        WorkdayClientService workdayClientService = new WorkdayClientService() // dirty way of loading App config
     }
 
     def "test Spock"() {
@@ -25,7 +26,7 @@ class HRPersonITSpec extends Specification {
 
     def "test findByAcadmeicAppointee"() {
         when:
-        HRPerson person = HRPerson.findByAcadmeicAppointee("x")
+        HRPerson person = HRPerson.findByAcadmeicAppointee(App.properties().get("test.findByAcadmeicAppointee.wid.id").toString())
         println person
 
         then:

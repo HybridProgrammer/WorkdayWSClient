@@ -38,12 +38,12 @@ class WorkdayClientService {
         if(!workdayClientService) {
             workdayClientService = new WorkdayClientService(configPath)
         }
-        username = App.config().getProperty("username")
-        wdPassword = App.config().getProperty("password")
-        tenant = App.config().getProperty("tenant")
+        username = App.properties().get("username")
+        wdPassword = App.properties().get("password")
+        tenant = App.properties().get("tenant")
         wdUser = "${username}@${tenant}"
-        host = App.config().getProperty("host")
-        version = "v${App.config().getProperty("version")}"
+        host = App.properties().get("host")
+        version = "v${App.properties().get("version")}"
     }
 
     def getServiceUrl(String service) {
