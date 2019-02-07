@@ -4,3 +4,10 @@ WorkdayWSClient is a library that aims to simplify the use of Workday Web Servic
 fetch and update data in Workday. The complexities in handling webservices should be removed from the developer. 
 
 While the project is written in Groovy any Java (JDK) language can load the class files (Jar) and use the objects. 
+
+# Helpful tips for debugging
+Run with to see soap messages
+```$xslt
+-Djavax.net.debug=all
+
+```

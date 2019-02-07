@@ -22,4 +22,13 @@ class HRPersonITSpec extends Specification {
         then:
         people.size() > 0
     }
+
+    def "test findByAcadmeicAppointee"() {
+        when:
+        HRPerson person = HRPerson.findByAcadmeicAppointee("x")
+        println person
+
+        then:
+        person
+    }
 }
