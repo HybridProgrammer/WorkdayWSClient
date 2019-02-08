@@ -3,15 +3,10 @@ package net.heithoff
 import groovy.util.logging.Slf4j
 import net.heithoff.base.LegalName
 import net.heithoff.base.PreferredName
-
-import workday.com.bsvc.AcademicAppointeeEnabledObjectIDType
-import workday.com.bsvc.AcademicAppointeeEnabledObjectType
-import workday.com.bsvc.AcademicAppointeeRequestReferencesType
-import workday.com.bsvc.AcademicAppointeeType
-import workday.com.bsvc.GetAcademicAppointeeRequestType
-import workday.com.bsvc.GetAcademicAppointeeResponseType
-import workday.com.bsvc.PersonNameDetailDataType
+import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
+
+import javax.xml.datatype.DatatypeFactory
 
 @Slf4j
 class AcademicAppointee {
@@ -21,6 +16,7 @@ class AcademicAppointee {
     String wid
     String descriptor
     String gender
+    GregorianCalendar dateOfBirthCache
     GregorianCalendar dateOfBirth
     GregorianCalendar dateOfDeath
     GregorianCalendar maritalStatusDate
@@ -51,6 +47,7 @@ class AcademicAppointee {
         preferredName = new PreferredName(wid, name)
 
         this.dateOfBirth = academicAppointeeType.academicAppointeeData.personalInformationData.dateOfBirth?.toGregorianCalendar()
+        this.dateOfBirthCache = academicAppointeeType.academicAppointeeData.personalInformationData.dateOfBirth?.toGregorianCalendar()
         this.dateOfDeath = academicAppointeeType.academicAppointeeData.personalInformationData.dateOfDeath?.toGregorianCalendar()
         this.maritalStatusDate = academicAppointeeType.academicAppointeeData.personalInformationData.maritalStatusDate?.toGregorianCalendar()
         this.lastMedialExamDate = academicAppointeeType.academicAppointeeData.personalInformationData.lastMedicalExamDate?.toGregorianCalendar()
@@ -105,6 +102,17 @@ class AcademicAppointee {
         legalName.resetDirty()
     }
 
+    Boolean getDirty() {
+        return isDirty()
+    }
+
+    Boolean isDirty() {
+        if(dateOfBirth != dateOfBirthCache) {
+            return true
+        }
+        return dirty
+    }
+
     void setDateOfBirth(GregorianCalendar dateOfBirth) {
         if(this.dateOfBirth != dateOfBirth) {
             dirty = true
@@ -113,6 +121,11 @@ class AcademicAppointee {
     }
 
     boolean save() {
+        if(isDirty()) {
+            if(!updateWorkday()) {
+                throw new Exception("Failed to update workday Academic Appointee data.")
+            }
+        }
         if(this.legalName.dirty) {
             if(!legalName.save()) {
                 throw new Exception("Failed to update Legal Name")
@@ -125,6 +138,38 @@ class AcademicAppointee {
         }
 
         return true
+    }
+
+    boolean updateWorkday() {
+        WorkdayClientService workdayClientService = WorkdayClientService.workdayClientService
+        ChangePersonalInformationRequestType request = new ChangePersonalInformationRequestType()
+        request.version = workdayClientService.version
+        request.businessProcessParameters = new BusinessProcessParametersType()
+        request.businessProcessParameters.autoComplete = true
+        request.businessProcessParameters.runNow = true
+        request.changePersonalInformationData = new ChangePersonalInformationBusinessProcessDataType()
+        request.changePersonalInformationData.workerReference = new WorkerObjectType()
+        request.changePersonalInformationData.workerReference.ID.add(wrapWid())
+        request.changePersonalInformationData.personalInformationData = new ChangePersonalInformationDataType()
+        request.changePersonalInformationData.personalInformationData.dateOfBirth = DatatypeFactory.newInstance().newXMLGregorianCalendar(this.dateOfBirth)
+
+        def resources = workdayClientService.getResources("Human_Resources")
+        try {
+            ChangePersonalInformationResponseType response = ((HumanResourcesPort) resources["port"]).changePersonalInformation(request)
+        } catch(Exception e) {
+            log.error(e.message)
+            throw e
+        }
+
+        return true
+    }
+
+    WorkerObjectIDType wrapWid() {
+        WorkerObjectIDType objectIDType = new WorkerObjectIDType()
+        objectIDType.type = "WID"
+        objectIDType.value = wid
+
+        return objectIDType
     }
 
     boolean equals(o) {

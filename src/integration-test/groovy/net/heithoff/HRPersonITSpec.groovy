@@ -160,4 +160,22 @@ class HRPersonITSpec extends Specification {
         then:
         affiliate2.preferredName.lastName == expectedValue
     }
+
+    // Validation error occurred. Invalid instance
+    def "test update dob"() {
+        given:
+        String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
+        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        println affiliate1
+
+        when: "update preferred first name"
+        affiliate1.dateOfBirth.add(Calendar.DAY_OF_YEAR, 1)
+        GregorianCalendar expectedValue = affiliate1.dateOfBirth
+        boolean value = affiliate1.save()
+        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+
+        then:
+        value
+        affiliate2.dateOfBirth.get(Calendar.DAY_OF_YEAR) == expectedValue.get(Calendar.DAY_OF_YEAR)
+    }
 }
