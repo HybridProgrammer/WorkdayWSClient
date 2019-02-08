@@ -1,6 +1,7 @@
 package net.heithoff
 
 import org.junit.experimental.categories.Category
+import spock.lang.Ignore
 import spock.lang.Specification
 
 @Category(IntegrationTest)
@@ -110,6 +111,7 @@ class HRPersonITSpec extends Specification {
         affiliate2.legalName.lastName == expectedValue
     }
 
+    @Ignore
     def "test update preferred names"() {
         given:
         String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()

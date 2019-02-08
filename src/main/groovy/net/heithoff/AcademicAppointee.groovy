@@ -17,8 +17,22 @@ import workday.com.bsvc.human_resources.HumanResourcesPort
 class AcademicAppointee {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     AcademicAppointeeType academicAppointeeType
+    Boolean dirty
     String wid
     String descriptor
+    String gender
+    GregorianCalendar dateOfBirth
+    GregorianCalendar dateOfDeath
+    GregorianCalendar maritalStatusDate
+    GregorianCalendar lastMedialExamDate
+    GregorianCalendar lastMedicalExamValidTo
+    Boolean hispanicOrLatino
+    String hukouLocality
+    String hukouPostalCode
+    String personnelFileAgency
+    String medicalExamNotes
+    Boolean usesTobacco
+
     LegalName legalName = new LegalName()
     PreferredName preferredName = new PreferredName()
 
@@ -35,6 +49,20 @@ class AcademicAppointee {
         legalName = new LegalName(wid, name)
         name = academicAppointeeType.academicAppointeeData.personData.preferredNameData.nameDetailData
         preferredName = new PreferredName(wid, name)
+
+        this.dateOfBirth = academicAppointeeType.academicAppointeeData.personalInformationData.dateOfBirth?.toGregorianCalendar()
+        this.dateOfDeath = academicAppointeeType.academicAppointeeData.personalInformationData.dateOfDeath?.toGregorianCalendar()
+        this.maritalStatusDate = academicAppointeeType.academicAppointeeData.personalInformationData.maritalStatusDate?.toGregorianCalendar()
+        this.lastMedialExamDate = academicAppointeeType.academicAppointeeData.personalInformationData.lastMedicalExamDate?.toGregorianCalendar()
+        this.lastMedicalExamValidTo = academicAppointeeType.academicAppointeeData.personalInformationData.lastMedicalExamValidTo?.toGregorianCalendar()
+
+        this.hispanicOrLatino = academicAppointeeType.academicAppointeeData.personalInformationData.hispanicOrLatino
+        this.hukouLocality = academicAppointeeType.academicAppointeeData.personalInformationData.hukouLocality
+        this.hukouPostalCode = academicAppointeeType.academicAppointeeData.personalInformationData.hukouPostalCode
+        this.personnelFileAgency = academicAppointeeType.academicAppointeeData.personalInformationData.personnelFileAgency
+        this.medicalExamNotes = academicAppointeeType.academicAppointeeData.personalInformationData.medicalExamNotes
+
+        this.usesTobacco = academicAppointeeType.academicAppointeeData.personalInformationData.usesTobacco
 
         resetDirty()
     }
@@ -73,7 +101,15 @@ class AcademicAppointee {
     }
 
     void resetDirty() {
+        dirty = false
         legalName.resetDirty()
+    }
+
+    void setDateOfBirth(GregorianCalendar dateOfBirth) {
+        if(this.dateOfBirth != dateOfBirth) {
+            dirty = true
+        }
+        this.dateOfBirth = dateOfBirth
     }
 
     boolean save() {
