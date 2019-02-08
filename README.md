@@ -13,7 +13,7 @@ Finding an Academic Appointee by WID
 
 ```$xslt
 String wid = "0111d20206d2015222b0a3d7f08a15df"
-HRPerson person = HRPerson.findByAcadmeicAppointee(wid)
+AcadmeicAppointee person = HRPerson.findByAcadmeicAppointee(wid)
 println person
 
 ```
@@ -21,7 +21,7 @@ println person
 Finding an Academic Appointee by Custom Reference ID
 
 ```$xslt
-HRPerson person = HRPerson.findByAcadmeicAppointee("ID123456", "Custom_Ref_ID")
+AcadmeicAppointee person = HRPerson.findByAcadmeicAppointee("ID123456", "Custom_Ref_ID")
 println person
 
 ```
@@ -36,10 +36,10 @@ List<HRPerson> people = HRPerson.findAll()
 Update Legal Name
 
 ```$xslt
-HRPerson person = HRPerson.findByAcadmeicAppointee(wid)
-person.academicAppointee.legalName.firstName = "New First Name"
-person.academicAppointee.legalName.middleName = "New Middle Name"
-person.academicAppointee.legalName.lastName = "New Last Name"
+AcadmeicAppointee person = HRPerson.findByAcadmeicAppointee(wid)
+person.legalName.firstName = "New First Name"
+person.legalName.middleName = "New Middle Name"
+person.legalName.lastName = "New Last Name"
 person.save()
 ```
 

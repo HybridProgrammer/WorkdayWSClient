@@ -1,8 +1,6 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
-import net.heithoff.base.HRAcademicAppointee
-import net.heithoff.base.HRWorker
 import net.heithoff.base.LegalName
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
@@ -19,8 +17,8 @@ class HRPerson {
     String descriptor
     String wid
 
-    HRWorker worker = new HRWorker()
-    HRAcademicAppointee academicAppointee = new HRAcademicAppointee()
+    Worker worker = new Worker()
+    AcademicAppointee academicAppointee = new AcademicAppointee()
 
     HRPerson(WorkerType workerType) {
         person = workerType
@@ -34,16 +32,14 @@ class HRPerson {
         List<AcademicAppointeeEnabledObjectIDType> ids = academicAppointeeType.academicAppointeeReference.id.first()
         wid = ids.find {it.type == "WID"}.value
         this.academicAppointee.legalName = new LegalName(wid, name)
+        this.academicAppointee.wid = this.wid
 
         resetDirty()
     }
 
     boolean save() {
-        if(academicAppointee.legalName.dirty) {
-            this.academicAppointee.legalName.save()
-        }
-        log.debug("object saved")
-        return true
+        log.debug("saving academicAppointee")
+        return this.academicAppointee.save()
     }
 
     void resetDirty() {
@@ -56,7 +52,7 @@ class HRPerson {
         log.info("works")
     }
 
-    static def findByAcadmeicAppointee(String id) {
+    static AcademicAppointee findByAcadmeicAppointee(String id) {
         try {
             String type = App.properties().get("HRPerson.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
 
@@ -67,7 +63,7 @@ class HRPerson {
         }
     }
 
-    static def findByAcadmeicAppointee(String id, String type) {
+    static AcademicAppointee findByAcadmeicAppointee(String id, String type) {
         try {
             def resources = workdayClientService.getResources("Human_Resources")
 
@@ -82,7 +78,7 @@ class HRPerson {
 
             GetAcademicAppointeeResponseType response = ((HumanResourcesPort) resources["port"]).getAcademicAppointee(request)
 
-            return new HRPerson(response.getResponseData().academicAppointee.first())
+            return new HRPerson(response.getResponseData().academicAppointee.first()).academicAppointee
         } catch (Exception e) {
             log.error(e.message)
             throw e
