@@ -1,6 +1,8 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
+import net.heithoff.base.HRAcademicAppointee
+import net.heithoff.base.HRWorker
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.ProcessingFaultMsg
@@ -16,6 +18,9 @@ class HRPerson {
     String descriptor
     String wid
 
+    HRWorker worker = new HRWorker()
+    HRAcademicAppointee academicAppointee = new HRAcademicAppointee()
+
     HRPerson(WorkerType workerType) {
         person = workerType
         descriptor = person.getWorkerReference().getDescriptor()
@@ -23,8 +28,13 @@ class HRPerson {
     }
 
     HRPerson(AcademicAppointeeType academicAppointeeType) {
-        descriptor = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData.formattedName
-        wid = academicAppointeeType.academicAppointeeReference.id.find { it.type == "WID"}
+        PersonNameDetailDataType name = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData
+        descriptor = name.formattedName
+        List<AcademicAppointeeEnabledObjectIDType> ids = academicAppointeeType.academicAppointeeReference.id.first()
+        wid = ids.find {it.type == "WID"}.value
+        this.academicAppointee.legalName.firstName = name.firstName
+        this.academicAppointee.legalName.middleName = name.middleName
+        this.academicAppointee.legalName.lastName = name.lastName
     }
 
     public static void main(String[] args) {
