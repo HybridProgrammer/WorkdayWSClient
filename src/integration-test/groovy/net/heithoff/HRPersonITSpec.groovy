@@ -108,7 +108,54 @@ class HRPersonITSpec extends Specification {
 
         then:
         affiliate2.legalName.lastName == expectedValue
+    }
 
+    def "test update preferred names"() {
+        given:
+        String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
+        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        println affiliate1
 
+        when: "update preferred first name"
+        String expectedValue = affiliate1.preferredName.firstName + "a"
+        affiliate1.preferredName.firstName += "a"
+        affiliate1.save()
+
+        then:
+        affiliate1.preferredName.firstName == expectedValue
+
+        when: "fetch value from server"
+        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+
+        then:
+        affiliate2.preferredName.firstName == expectedValue
+
+        when: "update preferred middle name"
+        expectedValue = affiliate1.preferredName.middleName + "b"
+        affiliate1.preferredName.middleName += "b"
+        affiliate1.save()
+
+        then:
+        affiliate1.preferredName.middleName == expectedValue
+
+        when: "fetch value from server"
+        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+
+        then:
+        affiliate2.preferredName.middleName == expectedValue
+
+        when: "update preferred last name"
+        expectedValue = affiliate1.preferredName.lastName + "c"
+        affiliate1.preferredName.lastName += "c"
+        affiliate1.save()
+
+        then:
+        affiliate1.preferredName.lastName == expectedValue
+
+        when: "fetch value from server"
+        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+
+        then:
+        affiliate2.preferredName.lastName == expectedValue
     }
 }

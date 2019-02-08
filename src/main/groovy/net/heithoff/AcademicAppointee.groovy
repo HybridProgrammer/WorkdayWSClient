@@ -33,6 +33,8 @@ class AcademicAppointee {
         List<AcademicAppointeeEnabledObjectIDType> ids = academicAppointeeType.academicAppointeeReference.id.first()
         wid = ids.find {it.type == "WID"}.value
         legalName = new LegalName(wid, name)
+        name = academicAppointeeType.academicAppointeeData.personData.preferredNameData.nameDetailData
+        preferredName = new PreferredName(wid, name)
 
         resetDirty()
     }
@@ -76,8 +78,17 @@ class AcademicAppointee {
 
     boolean save() {
         if(this.legalName.dirty) {
-            return legalName.save()
+            if(!legalName.save()) {
+                throw new Exception("Failed to update Legal Name")
+            }
         }
+        if(this.preferredName.dirty) {
+            if(!preferredName.save()) {
+                throw new Exception("Failed to update preferred Name")
+            }
+        }
+
+        return true
     }
 
     boolean equals(o) {

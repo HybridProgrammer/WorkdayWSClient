@@ -2,6 +2,8 @@ package net.heithoff
 
 import groovy.util.logging.Slf4j
 import workday.com.bsvc.ResponseFilterType
+import workday.com.bsvc.RoleObjectIDType
+import workday.com.bsvc.UniversalIdentifierObjectIDType
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.HumanResourcesService
 
@@ -106,5 +108,19 @@ class WorkdayClientService {
         GregorianCalendar c = new GregorianCalendar()
         c.setTime(now)
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(c)
+    }
+
+    RoleObjectIDType wrapWid(String wid) {
+        RoleObjectIDType pk = new RoleObjectIDType()
+        pk.value = wid
+        pk.type = "WID"
+        return pk
+    }
+
+    UniversalIdentifierObjectIDType wrapWidWithUID(String wid) {
+        UniversalIdentifierObjectIDType pk = new UniversalIdentifierObjectIDType()
+        pk.value = wid
+        pk.type = "WID"
+        return pk
     }
 }

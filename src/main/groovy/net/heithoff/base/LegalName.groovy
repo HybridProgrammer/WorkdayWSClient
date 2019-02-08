@@ -10,10 +10,12 @@ import workday.com.bsvc.ChangeLegalNameResponseType
 import workday.com.bsvc.PersonNameDetailDataType
 import workday.com.bsvc.RoleObjectIDType
 import workday.com.bsvc.RoleObjectType
+import workday.com.bsvc.UniversalIdentifierObjectType
 import workday.com.bsvc.human_resources.HumanResourcesPort
 
 @Slf4j
 class LegalName implements Name {
+    String parentWid
     String wid
     CountryReference country
 
@@ -21,8 +23,8 @@ class LegalName implements Name {
         resetDirty()
     }
 
-    LegalName(String wid, PersonNameDetailDataType name) {
-        this.wid = wid
+    LegalName(String parentWid, PersonNameDetailDataType name) {
+        this.parentWid = parentWid
         this.firstName = name.firstName
         this.middleName = name.middleName
         this.lastName = name.lastName
@@ -40,7 +42,7 @@ class LegalName implements Name {
         request.version = workdayClientService.version
         request.changeLegalNameData = new ChangeLegalNameBusinessProcessDataType()
         request.changeLegalNameData.personReference = new RoleObjectType()
-        request.changeLegalNameData.personReference.ID.add(getPrimaryKey())
+        request.changeLegalNameData.personReference.ID.add(workdayClientService.wrapWid(parentWid))
         request.changeLegalNameData.effectiveDate = workdayClientService.generateEffectiveDate()
         request.changeLegalNameData.nameData = new PersonNameDetailDataType()
         request.changeLegalNameData.nameData.countryReference = country.countryObjectType
@@ -55,13 +57,7 @@ class LegalName implements Name {
             log.error(e.message)
             throw e
         }
-    }
 
-    RoleObjectIDType getPrimaryKey() {
-        RoleObjectIDType pk = new RoleObjectIDType()
-        pk.value = wid
-        pk.type = "WID"
-        return pk
+        return true
     }
-
 }

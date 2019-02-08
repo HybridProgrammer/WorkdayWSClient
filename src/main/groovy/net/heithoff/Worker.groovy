@@ -29,6 +29,9 @@ class Worker {
         worker = workerType
         descriptor = worker.getWorkerReference().getDescriptor()
         wid = workerType.workerReference.ID.properties.get("WID")
+        if(workerType?.workerData?.personalData?.nameData?.legalNameData?.nameDetailData) {
+            legalName = new LegalName(wid, workerType.workerData.personalData.nameData.legalNameData.nameDetailData)
+        }
     }
 
     static def findAll() {
