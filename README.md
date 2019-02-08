@@ -9,7 +9,7 @@ fetch and update data in Workday. The complexities in handling webservices shoul
 While the project is written in Groovy any Java (JDK) language can load the class files (Jar) and use the objects. 
 
 ## Examples
-Finding an Acadmeic Appointee by WID
+Finding an Academic Appointee by WID
 
 ```$xslt
 String wid = "0111d20206d2015222b0a3d7f08a15df"
@@ -18,7 +18,7 @@ println person
 
 ```
 
-Finding an Acadmeic Appointee by Custom Reference ID
+Finding an Academic Appointee by Custom Reference ID
 
 ```$xslt
 HRPerson person = HRPerson.findByAcadmeicAppointee("ID123456", "Custom_Ref_ID")
