@@ -1,6 +1,8 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
+import net.heithoff.base.HRAcademicAppointee
+import net.heithoff.base.HRWorker
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.ProcessingFaultMsg
@@ -14,14 +16,25 @@ class HRPerson {
     WorkerType person
     AcademicAppointeeType academicAppointeeType
     String descriptor
+    String wid
+
+    HRWorker worker = new HRWorker()
+    HRAcademicAppointee academicAppointee = new HRAcademicAppointee()
 
     HRPerson(WorkerType workerType) {
         person = workerType
         descriptor = person.getWorkerReference().getDescriptor()
+        wid = workerType.workerReference.ID.properties.get("WID")
     }
 
     HRPerson(AcademicAppointeeType academicAppointeeType) {
-        descriptor = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData.formattedName
+        PersonNameDetailDataType name = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData
+        descriptor = name.formattedName
+        List<AcademicAppointeeEnabledObjectIDType> ids = academicAppointeeType.academicAppointeeReference.id.first()
+        wid = ids.find {it.type == "WID"}.value
+        this.academicAppointee.legalName.firstName = name.firstName
+        this.academicAppointee.legalName.middleName = name.middleName
+        this.academicAppointee.legalName.lastName = name.lastName
     }
 
     public static void main(String[] args) {
@@ -131,8 +144,23 @@ class HRPerson {
     @Override
     public String toString() {
         return "HRPerson{" +
-                "person=" + person +
-                ", descriptor='" + descriptor + '\'' +
+                "descriptor='" + descriptor + '\'' +
+                ", wid='" + wid + '\'' +
                 '}';
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        HRPerson hrPerson = (HRPerson) o
+
+        if (wid != hrPerson.wid) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (wid != null ? wid.hashCode() : 0)
     }
 }
