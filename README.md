@@ -12,7 +12,8 @@ While the project is written in Groovy any Java (JDK) language can load the clas
 Finding an Acadmeic Appointee by WID
 
 ```$xslt
-HRPerson person = HRPerson.findByAcadmeicAppointee("0111d20206d2015222b0a3d7f08a15df")
+String wid = "0111d20206d2015222b0a3d7f08a15df"
+HRPerson person = HRPerson.findByAcadmeicAppointee(wid)
 println person
 
 ```
@@ -35,7 +36,7 @@ List<HRPerson> people = HRPerson.findAll()
 Update Legal Name
 
 ```$xslt
-HRPerson person = HRPerson.findByAcadmeicAppointee("0111d20206d2015222b0a3d7f08a15df")
+HRPerson person = HRPerson.findByAcadmeicAppointee(wid)
 person.academicAppointee.legalName.firstName = "New First Name"
 person.academicAppointee.legalName.middleName = "New Middle Name"
 person.academicAppointee.legalName.lastName = "New Last Name"
