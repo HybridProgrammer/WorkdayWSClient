@@ -12,7 +12,7 @@ class WorkdayClientServiceSpec extends Specification {
 
     def setupSpec() {
         WorkdayClientService.configPath = "/Users/jheithof/Projects/WorkdayWSClient/workday_ws_client.unittest.properties"
-        workdayClientService = new WorkdayClientService()
+        workdayClientService = WorkdayClientService.getWorkdayClientService()
     }
 
     def "test spock"() {

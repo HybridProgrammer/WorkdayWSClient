@@ -32,6 +32,16 @@ List<HRPerson> people = HRPerson.findAll()
 
 ```
 
+Update Legal Name
+
+```$xslt
+HRPerson person = HRPerson.findByAcadmeicAppointee("0111d20206d2015222b0a3d7f08a15df")
+person.academicAppointee.legalName.firstName = "New First Name"
+person.academicAppointee.legalName.middleName = "New Middle Name"
+person.academicAppointee.legalName.lastName = "New Last Name"
+person.save()
+```
+
 # Sample Config
 ```$xslt
 username = "wd_username"

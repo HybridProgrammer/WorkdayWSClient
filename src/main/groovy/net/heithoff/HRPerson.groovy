@@ -3,6 +3,7 @@ package net.heithoff
 import groovy.util.logging.Slf4j
 import net.heithoff.base.HRAcademicAppointee
 import net.heithoff.base.HRWorker
+import net.heithoff.base.LegalName
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.ProcessingFaultMsg
@@ -12,7 +13,7 @@ import javax.xml.datatype.DatatypeConfigurationException
 
 @Slf4j
 class HRPerson {
-    static WorkdayClientService workdayClientService = new WorkdayClientService()
+    static WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     WorkerType person
     AcademicAppointeeType academicAppointeeType
     String descriptor
@@ -32,9 +33,22 @@ class HRPerson {
         descriptor = name.formattedName
         List<AcademicAppointeeEnabledObjectIDType> ids = academicAppointeeType.academicAppointeeReference.id.first()
         wid = ids.find {it.type == "WID"}.value
-        this.academicAppointee.legalName.firstName = name.firstName
-        this.academicAppointee.legalName.middleName = name.middleName
-        this.academicAppointee.legalName.lastName = name.lastName
+        this.academicAppointee.legalName = new LegalName(wid, name)
+
+        resetDirty()
+    }
+
+    boolean save() {
+        if(academicAppointee.legalName.dirty) {
+            this.academicAppointee.legalName.save()
+        }
+        log.debug("object saved")
+        return true
+    }
+
+    void resetDirty() {
+        this.academicAppointee.legalName.resetDirty()
+        this.worker.legalName.resetDirty()
     }
 
     public static void main(String[] args) {

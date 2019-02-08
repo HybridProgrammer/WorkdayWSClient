@@ -22,28 +22,29 @@ class WorkdayClientService {
     String host
     String version
 
-    WorkdayClientService() {
-        createWorkdayClientService()
+    private WorkdayClientService() {
     }
 
     private WorkdayClientService(String configFilePath) {
         App app = new App(configFilePath)
     }
 
-    def createWorkdayClientService() {
+    static def getWorkdayClientService() {
         if(!configPath) {
             configPath = "/Users/jheithof/workday_ws_client.test.properties"
         }
 
         if(!workdayClientService) {
             workdayClientService = new WorkdayClientService(configPath)
+            workdayClientService.username = App.properties().get("username")
+            workdayClientService.wdPassword = App.properties().get("password")
+            workdayClientService.tenant = App.properties().get("tenant")
+            workdayClientService.wdUser = "${workdayClientService.username}@${workdayClientService.tenant}"
+            workdayClientService.host = App.properties().get("host")
+            workdayClientService.version = "v${App.properties().get("version")}"
         }
-        username = App.properties().get("username")
-        wdPassword = App.properties().get("password")
-        tenant = App.properties().get("tenant")
-        wdUser = "${username}@${tenant}"
-        host = App.properties().get("host")
-        version = "v${App.properties().get("version")}"
+
+        return workdayClientService
     }
 
     def getServiceUrl(String service) {
@@ -98,5 +99,12 @@ class WorkdayClientService {
         responseFilter.setAsOfEffectiveDate(xmlCal)
         responseFilter.setPage(BigDecimal.valueOf(page))
         responseFilter.setCount(BigDecimal.valueOf(defaultPageCountSize))
+    }
+
+    XMLGregorianCalendar generateEffectiveDate() {
+        Date now = new Date()
+        GregorianCalendar c = new GregorianCalendar()
+        c.setTime(now)
+        return DatatypeFactory.newInstance().newXMLGregorianCalendar(c)
     }
 }

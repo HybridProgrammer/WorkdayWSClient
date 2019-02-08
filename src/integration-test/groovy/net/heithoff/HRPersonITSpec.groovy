@@ -7,7 +7,7 @@ import spock.lang.Specification
 class HRPersonITSpec extends Specification {
 
     def setupSpec() {
-        WorkdayClientService workdayClientService = new WorkdayClientService() // dirty way of loading App config
+        WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService() // dirty way of loading App config
     }
 
     def "test Spock"() {
@@ -59,5 +59,56 @@ class HRPersonITSpec extends Specification {
         person1.academicAppointee.legalName.middleName != person2.academicAppointee.legalName.middleName
         person1.academicAppointee.legalName.lastName != person2.academicAppointee.legalName.lastName
         person1 == person2 // only checks wid, this may change in the future
+    }
+
+    def "test update legal names"() {
+        given:
+        String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
+        HRPerson person1 = HRPerson.findByAcadmeicAppointee(wid)
+        println person1
+
+        when: "update legal first name"
+        String expectedValue = person1.academicAppointee.legalName.firstName + "a"
+        person1.academicAppointee.legalName.firstName += "a"
+        person1.save()
+
+        then:
+        person1.academicAppointee.legalName.firstName == expectedValue
+
+        when: "fetch value from server"
+        HRPerson person2 = HRPerson.findByAcadmeicAppointee(wid)
+
+        then:
+        person2.academicAppointee.legalName.firstName == expectedValue
+
+        when: "update legal middle name"
+        expectedValue = person1.academicAppointee.legalName.middleName + "b"
+        person1.academicAppointee.legalName.middleName += "b"
+        person1.save()
+
+        then:
+        person1.academicAppointee.legalName.middleName == expectedValue
+
+        when: "fetch value from server"
+        person2 = HRPerson.findByAcadmeicAppointee(wid)
+
+        then:
+        person2.academicAppointee.legalName.middleName == expectedValue
+
+        when: "update legal last name"
+        expectedValue = person1.academicAppointee.legalName.lastName + "c"
+        person1.academicAppointee.legalName.lastName += "c"
+        person1.save()
+
+        then:
+        person1.academicAppointee.legalName.lastName == expectedValue
+
+        when: "fetch value from server"
+        person2 = HRPerson.findByAcadmeicAppointee(wid)
+
+        then:
+        person2.academicAppointee.legalName.lastName == expectedValue
+
+
     }
 }
