@@ -1,7 +1,7 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
-import net.heithoff.base.LegalName
+import net.heithoff.traits.SearchAcademicAppointee
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.ProcessingFaultMsg
@@ -10,31 +10,16 @@ import workday.com.bsvc.human_resources.ValidationFaultMsg
 import javax.xml.datatype.DatatypeConfigurationException
 
 @Slf4j
-class HRPerson {
-    static WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
+class HRPerson implements SearchAcademicAppointee {
+    static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     WorkerType person
-    AcademicAppointeeType academicAppointeeType
-    String descriptor
     String wid
 
     Worker worker = new Worker()
     AcademicAppointee academicAppointee = new AcademicAppointee()
 
     HRPerson(WorkerType workerType) {
-        person = workerType
-        descriptor = person.getWorkerReference().getDescriptor()
-        wid = workerType.workerReference.ID.properties.get("WID")
-    }
-
-    HRPerson(AcademicAppointeeType academicAppointeeType) {
-        PersonNameDetailDataType name = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData
-        descriptor = name.formattedName
-        List<AcademicAppointeeEnabledObjectIDType> ids = academicAppointeeType.academicAppointeeReference.id.first()
-        wid = ids.find {it.type == "WID"}.value
-        this.academicAppointee.legalName = new LegalName(wid, name)
-        this.academicAppointee.wid = this.wid
-
-        resetDirty()
+        worker = new Worker(workerType)
     }
 
     boolean save() {
@@ -43,7 +28,7 @@ class HRPerson {
     }
 
     void resetDirty() {
-        this.academicAppointee.legalName.resetDirty()
+        this.academicAppointee.resetDrity()
         this.worker.legalName.resetDirty()
     }
 
@@ -53,36 +38,11 @@ class HRPerson {
     }
 
     static AcademicAppointee findByAcadmeicAppointee(String id) {
-        try {
-            String type = App.properties().get("HRPerson.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
-
-            return findByAcadmeicAppointee(id, type)
-        } catch (Exception e) {
-            log.error(e.message)
-            throw e
-        }
+        return AcademicAppointee.findByAcadmeicAppointee(id)
     }
 
     static AcademicAppointee findByAcadmeicAppointee(String id, String type) {
-        try {
-            def resources = workdayClientService.getResources("Human_Resources")
-
-            AcademicAppointeeRequestReferencesType reference = new AcademicAppointeeRequestReferencesType()
-            AcademicAppointeeEnabledObjectType refType = new AcademicAppointeeEnabledObjectType()
-            refType.ID.add(new AcademicAppointeeEnabledObjectIDType(type: type, value: id))
-            reference.academicAppointeeReference.add(refType)
-
-            GetAcademicAppointeeRequestType request = new GetAcademicAppointeeRequestType()
-            request.setVersion(workdayClientService.version)
-            request.requestReferences = reference
-
-            GetAcademicAppointeeResponseType response = ((HumanResourcesPort) resources["port"]).getAcademicAppointee(request)
-
-            return new HRPerson(response.getResponseData().academicAppointee.first()).academicAppointee
-        } catch (Exception e) {
-            log.error(e.message)
-            throw e
-        }
+        return AcademicAppointee.findByAcadmeicAppointee(id, type)
     }
 
     static def findAll() {

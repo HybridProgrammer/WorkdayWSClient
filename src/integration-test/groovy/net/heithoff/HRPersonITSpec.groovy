@@ -27,7 +27,7 @@ class HRPersonITSpec extends Specification {
     def "test findByAcadmeicAppointee"() {
         when: "we want to search by WID"
         String wid = App.properties().get("test.findByAcadmeicAppointee.wid.id").toString()
-        AcademicAppointee affiliate1 = HRPerson.findByAcadmeicAppointee(wid)
+        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
         println affiliate1
 
         then:
@@ -40,7 +40,7 @@ class HRPersonITSpec extends Specification {
         when: "we want to search by custom_ref"
         String id = App.properties().get("test.findByAcadmeicAppointee.custom_ref.id").toString()
         String type = App.properties().get("test.findByAcadmeicAppointee.custom_ref.type").toString()
-        AcademicAppointee affiliate2 = HRPerson.findByAcadmeicAppointee(id, type)
+        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(id, type)
         println affiliate2
 
         then:
@@ -64,7 +64,7 @@ class HRPersonITSpec extends Specification {
     def "test update legal names"() {
         given:
         String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
-        AcademicAppointee affiliate1 = HRPerson.findByAcadmeicAppointee(wid)
+        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
         println affiliate1
 
         when: "update legal first name"
@@ -76,7 +76,7 @@ class HRPersonITSpec extends Specification {
         affiliate1.legalName.firstName == expectedValue
 
         when: "fetch value from server"
-        AcademicAppointee affiliate2 = HRPerson.findByAcadmeicAppointee(wid)
+        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
 
         then:
         affiliate2.legalName.firstName == expectedValue
@@ -90,7 +90,7 @@ class HRPersonITSpec extends Specification {
         affiliate1.legalName.middleName == expectedValue
 
         when: "fetch value from server"
-        affiliate2 = HRPerson.findByAcadmeicAppointee(wid)
+        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
 
         then:
         affiliate2.legalName.middleName == expectedValue
@@ -104,7 +104,7 @@ class HRPersonITSpec extends Specification {
         affiliate1.legalName.lastName == expectedValue
 
         when: "fetch value from server"
-        affiliate2 = HRPerson.findByAcadmeicAppointee(wid)
+        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
 
         then:
         affiliate2.legalName.lastName == expectedValue
