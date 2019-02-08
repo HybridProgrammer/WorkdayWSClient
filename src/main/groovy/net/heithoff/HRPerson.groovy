@@ -3,6 +3,7 @@ package net.heithoff
 import groovy.util.logging.Slf4j
 import net.heithoff.base.HRAcademicAppointee
 import net.heithoff.base.HRWorker
+import net.heithoff.traits.Name
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.ProcessingFaultMsg
@@ -11,7 +12,7 @@ import workday.com.bsvc.human_resources.ValidationFaultMsg
 import javax.xml.datatype.DatatypeConfigurationException
 
 @Slf4j
-class HRPerson {
+class HRPerson implements Name {
     static WorkdayClientService workdayClientService = new WorkdayClientService()
     WorkerType person
     AcademicAppointeeType academicAppointeeType
