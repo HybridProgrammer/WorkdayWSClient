@@ -18,7 +18,7 @@ class HRPersonITSpec extends Specification {
 
     def "test findAll"() {
         when:
-        List<HRPerson> people = HRPerson.findAll()
+        List<Worker> people = Worker.findAll()
 
         then:
         people.size() > 0

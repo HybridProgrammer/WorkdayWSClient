@@ -4,7 +4,6 @@ import groovy.util.logging.Slf4j
 import net.heithoff.base.LegalName
 import net.heithoff.base.PreferredName
 
-import net.heithoff.traits.SearchAcademicAppointee
 import workday.com.bsvc.AcademicAppointeeEnabledObjectIDType
 import workday.com.bsvc.AcademicAppointeeEnabledObjectType
 import workday.com.bsvc.AcademicAppointeeRequestReferencesType
@@ -15,7 +14,7 @@ import workday.com.bsvc.PersonNameDetailDataType
 import workday.com.bsvc.human_resources.HumanResourcesPort
 
 @Slf4j
-class AcademicAppointee implements SearchAcademicAppointee {
+class AcademicAppointee {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     AcademicAppointeeType academicAppointeeType
     String wid

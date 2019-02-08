@@ -29,7 +29,7 @@ println person
 Get all workers
 
 ```$xslt
-List<HRPerson> people = HRPerson.findAll()
+List<Worker> people = Worker.findAll()
 
 ```
 
