@@ -172,6 +172,11 @@ class HRPersonITSpec extends Specification {
         affiliate1.dateOfBirth.add(Calendar.DAY_OF_YEAR, 1)
         GregorianCalendar expectedValue = affiliate1.dateOfBirth
         boolean value = affiliate1.save()
+
+        then:
+        value
+
+        when:
         AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
 
         then:
