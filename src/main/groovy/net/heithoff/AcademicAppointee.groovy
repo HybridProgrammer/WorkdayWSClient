@@ -66,7 +66,7 @@ class AcademicAppointee {
 
     static AcademicAppointee findByAcadmeicAppointee(String id) {
         try {
-            String type = App.properties().get("HRPerson.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
+            String type = App.properties().get("AcademicAppointee.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
 
             return findByAcadmeicAppointee(id, type)
         } catch (Exception e) {

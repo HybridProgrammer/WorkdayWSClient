@@ -1,10 +1,14 @@
 package net.heithoff
 
+import groovy.util.logging.Slf4j
 import net.heithoff.base.LegalName
 import net.heithoff.base.PreferredName
 import workday.com.bsvc.GetWorkersRequestType
 import workday.com.bsvc.GetWorkersResponseType
 import workday.com.bsvc.ResponseFilterType
+import workday.com.bsvc.WorkerObjectIDType
+import workday.com.bsvc.WorkerObjectType
+import workday.com.bsvc.WorkerRequestReferencesType
 import workday.com.bsvc.WorkerResponseGroupType
 import workday.com.bsvc.WorkerType
 import workday.com.bsvc.human_resources.HumanResourcesPort
@@ -13,6 +17,7 @@ import workday.com.bsvc.human_resources.ValidationFaultMsg
 
 import javax.xml.datatype.DatatypeConfigurationException
 
+@Slf4j
 class Worker {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     WorkerType worker
@@ -27,8 +32,9 @@ class Worker {
 
     Worker(WorkerType workerType) {
         worker = workerType
-        descriptor = worker.getWorkerReference().getDescriptor()
-        wid = workerType.workerReference.ID.properties.get("WID")
+        descriptor = worker.getWorkerDescriptor()
+        List<WorkerObjectIDType> ids = workerType.workerReference.ID
+        wid = ids.find {it.type == "WID"}.value
         if(workerType?.workerData?.personalData?.nameData?.legalNameData?.nameDetailData) {
             legalName = new LegalName(wid, workerType.workerData.personalData.nameData.legalNameData.nameDetailData)
         }
@@ -96,6 +102,39 @@ class Worker {
             e.printStackTrace()
         } catch (DatatypeConfigurationException e) {
             e.printStackTrace()
+        }
+    }
+
+    static Worker findByWorker(String id) {
+        try {
+            String type = App.properties().get("Worker.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
+
+            return findByWorker(id, type)
+        } catch (Exception e) {
+            log.error(e.message)
+            throw e
+        }
+    }
+
+    static Worker findByWorker(String id, String type) {
+        try {
+            def resources = workdayClientService.getResources("Human_Resources")
+
+            WorkerRequestReferencesType reference = new WorkerRequestReferencesType()
+            WorkerObjectType refType = new WorkerObjectType()
+            refType.ID.add(new WorkerObjectIDType(type: type, value: id))
+            reference.workerReference.add(refType)
+
+            GetWorkersRequestType request = new GetWorkersRequestType()
+            request.setVersion(workdayClientService.version)
+            request.requestReferences = reference
+
+            GetWorkersResponseType response = ((HumanResourcesPort) resources["port"]).getWorkers(request)
+
+            return new Worker(response.getResponseData().worker.first())
+        } catch (Exception e) {
+            log.error(e.message)
+            throw e
         }
     }
 
