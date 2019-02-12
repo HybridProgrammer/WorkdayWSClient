@@ -5,7 +5,7 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 @Category(IntegrationTest)
-class HRPersonITSpec extends Specification {
+class WorkerITSpec extends Specification {
 
     def setupSpec() {
         WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService() // dirty way of loading App config
@@ -25,6 +25,7 @@ class HRPersonITSpec extends Specification {
         people.size() > 0
     }
 
+    @Ignore
     def "test findByAcadmeicAppointee"() {
         when: "we want to search by WID"
         String wid = App.properties().get("test.findByAcadmeicAppointee.wid.id").toString()
@@ -62,6 +63,7 @@ class HRPersonITSpec extends Specification {
         affiliate1 == affiliate2 // only checks wid, this may change in the future
     }
 
+    @Ignore
     def "test update legal names"() {
         given:
         String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
@@ -162,6 +164,7 @@ class HRPersonITSpec extends Specification {
     }
 
     // Validation error occurred. Invalid instance
+    @Ignore
     def "test update dob"() {
         given:
         String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
