@@ -62,20 +62,19 @@ class WorkerITSpec extends Specification {
         worker1 == worker2 // only checks wid, this may change in the future
     }
 
-    @Ignore
     def "test update legal names"() {
         given:
         String wid = App.properties().get("test2.findByWorker.wid.id").toString()
-        Worker affiliate1 = Worker.findByWorker(wid)
-        println affiliate1
+        Worker worker1 = Worker.findByWorker(wid)
+        println worker1
 
         when: "update legal first name"
-        String expectedValue = affiliate1.legalName.firstName + "a"
-        affiliate1.legalName.firstName += "a"
-        affiliate1.save()
+        String expectedValue = worker1.legalName.firstName + "a"
+        worker1.legalName.firstName += "a"
+        worker1.save()
 
         then:
-        affiliate1.legalName.firstName == expectedValue
+        worker1.legalName.firstName == expectedValue
 
         when: "fetch value from server"
         Worker worker2 = Worker.findByWorker(wid)
@@ -84,12 +83,12 @@ class WorkerITSpec extends Specification {
         worker2.legalName.firstName == expectedValue
 
         when: "update legal middle name"
-        expectedValue = affiliate1.legalName.middleName + "b"
-        affiliate1.legalName.middleName += "b"
-        affiliate1.save()
+        expectedValue = worker1.legalName.middleName + "b"
+        worker1.legalName.middleName += "b"
+        worker1.save()
 
         then:
-        affiliate1.legalName.middleName == expectedValue
+        worker1.legalName.middleName == expectedValue
 
         when: "fetch value from server"
         worker2 = Worker.findByWorker(wid)
@@ -98,12 +97,12 @@ class WorkerITSpec extends Specification {
         worker2.legalName.middleName == expectedValue
 
         when: "update legal last name"
-        expectedValue = affiliate1.legalName.lastName + "c"
-        affiliate1.legalName.lastName += "c"
-        affiliate1.save()
+        expectedValue = worker1.legalName.lastName + "c"
+        worker1.legalName.lastName += "c"
+        worker1.save()
 
         then:
-        affiliate1.legalName.lastName == expectedValue
+        worker1.legalName.lastName == expectedValue
 
         when: "fetch value from server"
         worker2 = Worker.findByWorker(wid)
@@ -112,20 +111,19 @@ class WorkerITSpec extends Specification {
         worker2.legalName.lastName == expectedValue
     }
 
-    @Ignore
     def "test update preferred names"() {
         given:
         String wid = App.properties().get("test2.findByWorker.wid.id").toString()
-        Worker affiliate1 = Worker.findByWorker(wid)
-        println affiliate1
+        Worker worker1 = Worker.findByWorker(wid)
+        println worker1
 
         when: "update preferred first name"
-        String expectedValue = affiliate1.preferredName.firstName + "a"
-        affiliate1.preferredName.firstName += "a"
-        affiliate1.save()
+        String expectedValue = worker1.preferredName.firstName + "a"
+        worker1.preferredName.firstName += "a"
+        worker1.save()
 
         then:
-        affiliate1.preferredName.firstName == expectedValue
+        worker1.preferredName.firstName == expectedValue
 
         when: "fetch value from server"
         Worker worker2 = Worker.findByWorker(wid)
@@ -134,12 +132,12 @@ class WorkerITSpec extends Specification {
         worker2.preferredName.firstName == expectedValue
 
         when: "update preferred middle name"
-        expectedValue = affiliate1.preferredName.middleName + "b"
-        affiliate1.preferredName.middleName += "b"
-        affiliate1.save()
+        expectedValue = worker1.preferredName.middleName + "b"
+        worker1.preferredName.middleName += "b"
+        worker1.save()
 
         then:
-        affiliate1.preferredName.middleName == expectedValue
+        worker1.preferredName.middleName == expectedValue
 
         when: "fetch value from server"
         worker2 = Worker.findByWorker(wid)
@@ -148,12 +146,12 @@ class WorkerITSpec extends Specification {
         worker2.preferredName.middleName == expectedValue
 
         when: "update preferred last name"
-        expectedValue = affiliate1.preferredName.lastName + "c"
-        affiliate1.preferredName.lastName += "c"
-        affiliate1.save()
+        expectedValue = worker1.preferredName.lastName + "c"
+        worker1.preferredName.lastName += "c"
+        worker1.save()
 
         then:
-        affiliate1.preferredName.lastName == expectedValue
+        worker1.preferredName.lastName == expectedValue
 
         when: "fetch value from server"
         worker2 = Worker.findByWorker(wid)
@@ -163,17 +161,16 @@ class WorkerITSpec extends Specification {
     }
 
     // Validation error occurred. Invalid instance
-    @Ignore
     def "test update dob"() {
         given:
         String wid = App.properties().get("test2.findByWorker.wid.id").toString()
-        Worker affiliate1 = Worker.findByWorker(wid)
-        println affiliate1
+        Worker worker1 = Worker.findByWorker(wid)
+        println worker1
 
         when: "update preferred first name"
-        affiliate1.dateOfBirth.add(Calendar.DAY_OF_YEAR, 1)
-        GregorianCalendar expectedValue = affiliate1.dateOfBirth
-        boolean value = affiliate1.save()
+        toggleDobDayOfYeay(worker1)
+        GregorianCalendar expectedValue = worker1.dateOfBirth
+        boolean value = worker1.save()
 
         then:
         value
@@ -184,5 +181,13 @@ class WorkerITSpec extends Specification {
         then:
         value
         worker2.dateOfBirth.get(Calendar.DAY_OF_YEAR) == expectedValue.get(Calendar.DAY_OF_YEAR)
+    }
+
+    private void toggleDobDayOfYeay(Worker worker1) {
+        if (worker1.dateOfBirth.get(Calendar.DAY_OF_YEAR) % 2 == 0) {
+            worker1.dateOfBirth.add(Calendar.DAY_OF_YEAR, 1)
+        } else {
+            worker1.dateOfBirth.add(Calendar.DAY_OF_YEAR, 1)
+        }
     }
 }

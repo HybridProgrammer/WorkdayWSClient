@@ -3,6 +3,11 @@ package net.heithoff
 import groovy.util.logging.Slf4j
 import net.heithoff.base.LegalName
 import net.heithoff.base.PreferredName
+import workday.com.bsvc.BusinessProcessParametersType
+import workday.com.bsvc.ChangePersonalInformationBusinessProcessDataType
+import workday.com.bsvc.ChangePersonalInformationDataType
+import workday.com.bsvc.ChangePersonalInformationRequestType
+import workday.com.bsvc.ChangePersonalInformationResponseType
 import workday.com.bsvc.GetWorkersRequestType
 import workday.com.bsvc.GetWorkersResponseType
 import workday.com.bsvc.ResponseFilterType
@@ -16,13 +21,17 @@ import workday.com.bsvc.human_resources.ProcessingFaultMsg
 import workday.com.bsvc.human_resources.ValidationFaultMsg
 
 import javax.xml.datatype.DatatypeConfigurationException
+import javax.xml.datatype.DatatypeFactory
 
 @Slf4j
 class Worker {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     WorkerType worker
+    Boolean dirty
     String descriptor
     String wid
+    GregorianCalendar dateOfBirthCache
+    GregorianCalendar dateOfBirth
     LegalName legalName = new LegalName()
     PreferredName preferredName = new PreferredName()
 
@@ -38,6 +47,13 @@ class Worker {
         if(workerType?.workerData?.personalData?.nameData?.legalNameData?.nameDetailData) {
             legalName = new LegalName(wid, workerType.workerData.personalData.nameData.legalNameData.nameDetailData)
         }
+        if(workerType?.workerData?.personalData?.nameData?.preferredNameData?.nameDetailData) {
+            preferredName = new PreferredName(wid, workerType.workerData.personalData.nameData.preferredNameData.nameDetailData)
+        }
+
+        this.dateOfBirth = workerType.workerData.personalData.birthDate?.toGregorianCalendar()
+        this.dateOfBirthCache = workerType.workerData.personalData.birthDate?.toGregorianCalendar()
+        resetDirty()
     }
 
     static def findAll() {
@@ -136,6 +152,81 @@ class Worker {
             log.error(e.message)
             throw e
         }
+    }
+
+    void resetDirty() {
+        dirty = false
+        legalName.resetDirty()
+    }
+
+    Boolean getDirty() {
+        return isDirty()
+    }
+
+    Boolean isDirty() {
+        if(dateOfBirth != dateOfBirthCache) {
+            return true
+        }
+        return dirty
+    }
+
+    void setDateOfBirth(GregorianCalendar dateOfBirth) {
+        if(this.dateOfBirth != dateOfBirth) {
+            dirty = true
+        }
+        this.dateOfBirth = dateOfBirth
+    }
+
+    boolean save() {
+        if(isDirty()) {
+            if(!updateWorkday()) {
+                throw new Exception("Failed to update workday Academic Appointee data.")
+            }
+        }
+        if(this.legalName.dirty) {
+            if(!legalName.save()) {
+                throw new Exception("Failed to update Legal Name")
+            }
+        }
+        if(this.preferredName.dirty) {
+            if(!preferredName.save()) {
+                throw new Exception("Failed to update preferred Name")
+            }
+        }
+
+        return true
+    }
+
+    boolean updateWorkday() {
+        WorkdayClientService workdayClientService = WorkdayClientService.workdayClientService
+        ChangePersonalInformationRequestType request = new ChangePersonalInformationRequestType()
+        request.version = workdayClientService.version
+        request.businessProcessParameters = new BusinessProcessParametersType()
+        request.businessProcessParameters.autoComplete = true
+        request.businessProcessParameters.runNow = true
+        request.changePersonalInformationData = new ChangePersonalInformationBusinessProcessDataType()
+        request.changePersonalInformationData.workerReference = new WorkerObjectType()
+        request.changePersonalInformationData.workerReference.ID.add(wrapWid())
+        request.changePersonalInformationData.personalInformationData = new ChangePersonalInformationDataType()
+        request.changePersonalInformationData.personalInformationData.dateOfBirth = DatatypeFactory.newInstance().newXMLGregorianCalendar(this.dateOfBirth)
+
+        def resources = workdayClientService.getResources("Human_Resources")
+        try {
+            ChangePersonalInformationResponseType response = ((HumanResourcesPort) resources["port"]).changePersonalInformation(request)
+        } catch(Exception e) {
+            log.error(e.message)
+            throw e
+        }
+
+        return true
+    }
+
+    WorkerObjectIDType wrapWid() {
+        WorkerObjectIDType objectIDType = new WorkerObjectIDType()
+        objectIDType.type = "WID"
+        objectIDType.value = wid
+
+        return objectIDType
     }
 
 
