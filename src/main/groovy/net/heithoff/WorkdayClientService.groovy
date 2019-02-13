@@ -110,6 +110,17 @@ class WorkdayClientService {
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(c)
     }
 
+    /**
+     * Workday Docs:
+     * A reference to the ID of the person through one of its active person types, such as worker,
+     * student, affiliate, external committee member, and so on. The ID consists of a type attribute,
+     * which should be set to one of either "Employee_ID", "Contingent_Worker_ID", "Student_ID",
+     * etc, and a value attribute, such as "04345".
+     *
+     * I don't think the docs are correct, wid also works
+     * @param wid
+     * @return
+     */
     RoleObjectIDType wrapWid(String wid) {
         RoleObjectIDType pk = new RoleObjectIDType()
         pk.value = wid

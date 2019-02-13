@@ -3,14 +3,7 @@ package net.heithoff.base
 import groovy.util.logging.Slf4j
 import net.heithoff.WorkdayClientService
 import net.heithoff.traits.Name
-import workday.com.bsvc.BusinessProcessParametersType
-import workday.com.bsvc.ChangeLegalNameBusinessProcessDataType
-import workday.com.bsvc.ChangeLegalNameRequestType
-import workday.com.bsvc.ChangeLegalNameResponseType
-import workday.com.bsvc.PersonNameDetailDataType
-import workday.com.bsvc.RoleObjectIDType
-import workday.com.bsvc.RoleObjectType
-import workday.com.bsvc.UniversalIdentifierObjectType
+import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 
 @Slf4j
