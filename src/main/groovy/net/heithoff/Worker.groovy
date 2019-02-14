@@ -3,14 +3,20 @@ package net.heithoff
 import groovy.util.logging.Slf4j
 import net.heithoff.base.LegalName
 import net.heithoff.base.PreferredName
+import workday.com.bsvc.AssignUserBasedSecurityGroupsRequestReferencesType
 import workday.com.bsvc.BusinessProcessParametersType
 import workday.com.bsvc.ChangePersonalInformationBusinessProcessDataType
 import workday.com.bsvc.ChangePersonalInformationDataType
 import workday.com.bsvc.ChangePersonalInformationRequestType
 import workday.com.bsvc.ChangePersonalInformationResponseType
+import workday.com.bsvc.GetAssignUserBasedSecurityGroupRequestType
+import workday.com.bsvc.GetAssignUserBasedSecurityGroupResponseType
+import workday.com.bsvc.GetAssignUserBasedSecurityGroupsRequestType
 import workday.com.bsvc.GetWorkersRequestType
 import workday.com.bsvc.GetWorkersResponseType
 import workday.com.bsvc.ResponseFilterType
+import workday.com.bsvc.SystemUserObjectIDType
+import workday.com.bsvc.SystemUserObjectType
 import workday.com.bsvc.WorkerObjectIDType
 import workday.com.bsvc.WorkerObjectType
 import workday.com.bsvc.WorkerRequestReferencesType
@@ -81,6 +87,8 @@ class Worker {
                 // Set the desired response group(s) to return
                 WorkerResponseGroupType responseGroup = new WorkerResponseGroupType()
                 responseGroup.setIncludeReference(true)
+                responseGroup.setIncludeRoles(true)
+                responseGroup.setIncludeUserAccount(true)
                 request.setResponseGroup(responseGroup)
 
                 // Submit the request creating the "response" object
@@ -103,7 +111,6 @@ class Worker {
                 if (totalPages == 1) {
                     totalPages = response.getResponseResults().getTotalPages()
                             .intValue()
-                    break
                 }
                 currentPage++
             }
@@ -148,6 +155,48 @@ class Worker {
             GetWorkersResponseType response = ((HumanResourcesPort) resources["port"]).getWorkers(request)
 
             return new Worker(response.getResponseData().worker.first())
+        } catch (Exception e) {
+            log.error(e.message)
+            throw e
+        }
+    }
+
+    def getSecurityGroups() {
+        try {
+            return getSecurityGroups(wid, "WID")
+        } catch (Exception e) {
+            log.error(e.message)
+            throw e
+        }
+    }
+
+    static Worker getSecurityGroups(String id) {
+        try {
+            String type = App.properties().get("Worker.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
+
+            return getSecurityGroups(id, type)
+        } catch (Exception e) {
+            log.error(e.message)
+            throw e
+        }
+    }
+
+    static Worker getSecurityGroups(String id, String type) {
+        try {
+            def resources = workdayClientService.getResources("Human_Resources")
+
+            AssignUserBasedSecurityGroupsRequestReferencesType reference = new AssignUserBasedSecurityGroupsRequestReferencesType()
+            SystemUserObjectType refType = new SystemUserObjectType()
+            refType.ID.add(new SystemUserObjectIDType(type: type, value: id))
+            reference.workdayAccountReference.add(refType)
+
+            GetAssignUserBasedSecurityGroupsRequestType request = new GetAssignUserBasedSecurityGroupsRequestType()
+            request.setVersion(workdayClientService.version)
+            request.requestReferences = reference
+
+            GetAssignUserBasedSecurityGroupResponseType response = ((HumanResourcesPort) resources["port"]).getAssignUserBasedSecurityGroup(request)
+
+            assert response == true
         } catch (Exception e) {
             log.error(e.message)
             throw e
