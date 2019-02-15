@@ -43,6 +43,14 @@ person.legalName.lastName = "New Last Name"
 person.save()
 ```
 
+Update workEmail
+
+```$xslt
+Worker person = Worker.findByWorker(wid)
+person.workEmail.address = "a" + person.workEmail.address
+person.save()
+```
+
 # Sample Config
 ```$xslt
 username = "wd_username"
