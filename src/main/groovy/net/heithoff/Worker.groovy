@@ -66,7 +66,7 @@ class Worker {
     private void loadEmailData(WorkerType workerType) {
         emailAddresses = []
         workerType.workerData.personalData.contactData.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
-            Email email = new Email(emailAddressData)
+            Email email = new Email(wid, emailAddressData)
             this.emailAddresses.add(email)
             if (email.isPrimary && "WORK".equalsIgnoreCase(email.usageType)) {
                 workEmail = email

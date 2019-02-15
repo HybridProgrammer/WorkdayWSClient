@@ -4,6 +4,7 @@ import groovy.util.logging.Slf4j
 import workday.com.bsvc.ResponseFilterType
 import workday.com.bsvc.RoleObjectIDType
 import workday.com.bsvc.UniversalIdentifierObjectIDType
+import workday.com.bsvc.WorkerObjectIDType
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.HumanResourcesService
 
@@ -123,6 +124,13 @@ class WorkdayClientService {
      */
     RoleObjectIDType wrapWid(String wid) {
         RoleObjectIDType pk = new RoleObjectIDType()
+        pk.value = wid
+        pk.type = "WID"
+        return pk
+    }
+
+    WorkerObjectIDType wrapWidWithWorkerObjectIdType(String wid) {
+        WorkerObjectIDType pk = new WorkerObjectIDType()
         pk.value = wid
         pk.type = "WID"
         return pk
