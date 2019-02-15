@@ -8,6 +8,14 @@ trait Name {
 
     Boolean dirty = false
 
+    void resetDirty() {
+        dirty = false
+    }
+
+    boolean isDirty() {
+        return dirty
+    }
+
     void setFirstName(String firstName) {
         if(this.firstName != firstName) {
             dirty = true
@@ -28,13 +36,4 @@ trait Name {
         }
         this.lastName = lastName
     }
-
-    void resetDirty() {
-        dirty = false
-    }
-
-    boolean isDirty() {
-        return dirty
-    }
-
 }

@@ -216,6 +216,12 @@ class Worker {
                 throw new Exception("Failed to update preferred Name")
             }
         }
+        def dirtyEmails = emailAddresses.findAll {it.isDirty()}
+        if(dirtyEmails.size() > 0) {
+            dirtyEmails.each {
+                it.save()
+            }
+        }
 
         return true
     }
