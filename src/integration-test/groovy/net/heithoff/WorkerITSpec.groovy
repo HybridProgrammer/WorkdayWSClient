@@ -190,4 +190,25 @@ class WorkerITSpec extends Specification {
             worker1.dateOfBirth.add(Calendar.DAY_OF_YEAR, 1)
         }
     }
+
+    def "test update email address"() {
+        given:
+        String wid = App.properties().get("test2.findByWorker.wid.id").toString()
+        Worker worker1 = Worker.findByWorker(wid)
+        println worker1
+
+        when: "update work email address"
+        worker1.workEmail.address = "a" + worker1.workEmail.address
+        boolean value = worker1.save()
+
+        then:
+        value
+
+        when:
+        Worker worker2 = Worker.findByWorker(wid)
+
+        then:
+        value
+        worker2.workEmail.address == worker1.workEmail.address
+    }
 }

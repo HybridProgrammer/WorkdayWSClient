@@ -1,6 +1,7 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
+import net.heithoff.base.Email
 import net.heithoff.base.LegalName
 import net.heithoff.base.PreferredName
 import workday.com.bsvc.BusinessProcessParametersType
@@ -8,6 +9,7 @@ import workday.com.bsvc.ChangePersonalInformationBusinessProcessDataType
 import workday.com.bsvc.ChangePersonalInformationDataType
 import workday.com.bsvc.ChangePersonalInformationRequestType
 import workday.com.bsvc.ChangePersonalInformationResponseType
+import workday.com.bsvc.EmailAddressInformationDataType
 import workday.com.bsvc.GetWorkersRequestType
 import workday.com.bsvc.GetWorkersResponseType
 import workday.com.bsvc.ResponseFilterType
@@ -34,6 +36,9 @@ class Worker {
     GregorianCalendar dateOfBirth
     LegalName legalName = new LegalName()
     PreferredName preferredName = new PreferredName()
+    Email workEmail
+    Email personalEmail
+    List<Email> emailAddresses
 
     Worker() {
 
@@ -53,7 +58,25 @@ class Worker {
 
         this.dateOfBirth = workerType.workerData.personalData.birthDate?.toGregorianCalendar()
         this.dateOfBirthCache = workerType.workerData.personalData.birthDate?.toGregorianCalendar()
+        loadEmailData(workerType)
+
         resetDirty()
+    }
+
+    private void loadEmailData(WorkerType workerType) {
+        emailAddresses = []
+        workerType.workerData.personalData.contactData.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
+            Email email = new Email(emailAddressData)
+            this.emailAddresses.add(email)
+            if (email.isPrimary && "WORK".equalsIgnoreCase(email.usageType)) {
+                workEmail = email
+            }
+        }
+
+        // if there is no primary work email select the first work email available
+        if (!workEmail) {
+            workEmail = emailAddresses.find { "WORK".equalsIgnoreCase(it.usageType) }
+        }
     }
 
     static def findAll() {
