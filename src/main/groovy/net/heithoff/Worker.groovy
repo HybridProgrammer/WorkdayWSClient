@@ -104,6 +104,7 @@ class Worker {
                 // Set the desired response group(s) to return
                 WorkerResponseGroupType responseGroup = new WorkerResponseGroupType()
                 responseGroup.setIncludeReference(true)
+                responseGroup.setIncludePersonalInformation(true)
                 request.setResponseGroup(responseGroup)
 
                 // Submit the request creating the "response" object
@@ -144,18 +145,18 @@ class Worker {
         }
     }
 
-    static Worker findByWorker(String id) {
+    static Worker findById(String id) {
         try {
             String type = App.properties().get("Worker.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
 
-            return findByWorker(id, type)
+            return findById(id, type)
         } catch (Exception e) {
             log.error(e.message)
             throw e
         }
     }
 
-    static Worker findByWorker(String id, String type) {
+    static Worker findById(String id, String type) {
         try {
             def resources = workdayClientService.getResources("Human_Resources")
 

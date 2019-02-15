@@ -64,18 +64,18 @@ class AcademicAppointee {
         resetDirty()
     }
 
-    static AcademicAppointee findByAcadmeicAppointee(String id) {
+    static AcademicAppointee findById(String id) {
         try {
             String type = App.properties().get("AcademicAppointee.default.id.type") ?: "WID" //"Academic_Affiliate_ID"
 
-            return findByAcadmeicAppointee(id, type)
+            return findById(id, type)
         } catch (Exception e) {
             log.error(e.message)
             throw e
         }
     }
 
-    static AcademicAppointee findByAcadmeicAppointee(String id, String type) {
+    static AcademicAppointee findById(String id, String type) {
         try {
             def resources = workdayClientService.getResources("Human_Resources")
 

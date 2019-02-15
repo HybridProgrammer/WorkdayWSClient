@@ -17,30 +17,30 @@ class AcademicAppointeeITSpec extends Specification {
         true == true
     }
 
-    def "test findByAcadmeicAppointee"() {
+    def "test findById"() {
         when: "we want to search by WID"
-        String wid = App.properties().get("test.findByAcadmeicAppointee.wid.id").toString()
-        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        String wid = App.properties().get("test.acadmeicAppointee.wid.id").toString()
+        AcademicAppointee affiliate1 = AcademicAppointee.findById(wid)
         println affiliate1
 
         then:
         affiliate1
         affiliate1.wid == wid
-        affiliate1.legalName.firstName == App.properties().get("test.findByAcadmeicAppointee.legal.firstName")
-        affiliate1.legalName.middleName == App.properties().get("test.findByAcadmeicAppointee.legal.middleName")
-        affiliate1.legalName.lastName == App.properties().get("test.findByAcadmeicAppointee.legal.lastName")
+        affiliate1.legalName.firstName == App.properties().get("test.acadmeicAppointee.legal.firstName")
+        affiliate1.legalName.middleName == App.properties().get("test.acadmeicAppointee.legal.middleName")
+        affiliate1.legalName.lastName == App.properties().get("test.acadmeicAppointee.legal.lastName")
 
         when: "we want to search by custom_ref"
-        String id = App.properties().get("test.findByAcadmeicAppointee.custom_ref.id").toString()
-        String type = App.properties().get("test.findByAcadmeicAppointee.custom_ref.type").toString()
-        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(id, type)
+        String id = App.properties().get("test.acadmeicAppointee.custom_ref.id").toString()
+        String type = App.properties().get("test.acadmeicAppointee.custom_ref.type").toString()
+        AcademicAppointee affiliate2 = AcademicAppointee.findById(id, type)
         println affiliate2
 
         then:
         affiliate2.wid == wid
-        affiliate2.legalName.firstName == App.properties().get("test.findByAcadmeicAppointee.legal.firstName")
-        affiliate2.legalName.middleName == App.properties().get("test.findByAcadmeicAppointee.legal.middleName")
-        affiliate2.legalName.lastName == App.properties().get("test.findByAcadmeicAppointee.legal.lastName")
+        affiliate2.legalName.firstName == App.properties().get("test.acadmeicAppointee.legal.firstName")
+        affiliate2.legalName.middleName == App.properties().get("test.acadmeicAppointee.legal.middleName")
+        affiliate2.legalName.lastName == App.properties().get("test.acadmeicAppointee.legal.lastName")
 
         when: "we modify any attribute other than wid equality is always true when wids match"
         affiliate1.legalName.firstName = "something else"
@@ -56,8 +56,8 @@ class AcademicAppointeeITSpec extends Specification {
 
     def "test update legal names"() {
         given:
-        String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
-        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        String wid = App.properties().get("test2.acadmeicAppointee.wid.id").toString()
+        AcademicAppointee affiliate1 = AcademicAppointee.findById(wid)
         println affiliate1
 
         when: "update legal first name"
@@ -69,7 +69,7 @@ class AcademicAppointeeITSpec extends Specification {
         affiliate1.legalName.firstName == expectedValue
 
         when: "fetch value from server"
-        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        AcademicAppointee affiliate2 = AcademicAppointee.findById(wid)
 
         then:
         affiliate2.legalName.firstName == expectedValue
@@ -83,7 +83,7 @@ class AcademicAppointeeITSpec extends Specification {
         affiliate1.legalName.middleName == expectedValue
 
         when: "fetch value from server"
-        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        affiliate2 = AcademicAppointee.findById(wid)
 
         then:
         affiliate2.legalName.middleName == expectedValue
@@ -97,7 +97,7 @@ class AcademicAppointeeITSpec extends Specification {
         affiliate1.legalName.lastName == expectedValue
 
         when: "fetch value from server"
-        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        affiliate2 = AcademicAppointee.findById(wid)
 
         then:
         affiliate2.legalName.lastName == expectedValue
@@ -106,8 +106,8 @@ class AcademicAppointeeITSpec extends Specification {
 //    @Ignore
     def "test update preferred names"() {
         given:
-        String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
-        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        String wid = App.properties().get("test2.acadmeicAppointee.wid.id").toString()
+        AcademicAppointee affiliate1 = AcademicAppointee.findById(wid)
         println affiliate1
 
         when: "update preferred first name"
@@ -119,7 +119,7 @@ class AcademicAppointeeITSpec extends Specification {
         affiliate1.preferredName.firstName == expectedValue
 
         when: "fetch value from server"
-        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        AcademicAppointee affiliate2 = AcademicAppointee.findById(wid)
 
         then:
         affiliate2.preferredName.firstName == expectedValue
@@ -133,7 +133,7 @@ class AcademicAppointeeITSpec extends Specification {
         affiliate1.preferredName.middleName == expectedValue
 
         when: "fetch value from server"
-        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        affiliate2 = AcademicAppointee.findById(wid)
 
         then:
         affiliate2.preferredName.middleName == expectedValue
@@ -147,7 +147,7 @@ class AcademicAppointeeITSpec extends Specification {
         affiliate1.preferredName.lastName == expectedValue
 
         when: "fetch value from server"
-        affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        affiliate2 = AcademicAppointee.findById(wid)
 
         then:
         affiliate2.preferredName.lastName == expectedValue
@@ -157,8 +157,8 @@ class AcademicAppointeeITSpec extends Specification {
     @Ignore
     def "test update dob"() {
         given:
-        String wid = App.properties().get("test2.findByAcadmeicAppointee.wid.id").toString()
-        AcademicAppointee affiliate1 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        String wid = App.properties().get("test2.acadmeicAppointee.wid.id").toString()
+        AcademicAppointee affiliate1 = AcademicAppointee.findById(wid)
         println affiliate1
 
         when: "update preferred first name"
@@ -170,7 +170,7 @@ class AcademicAppointeeITSpec extends Specification {
         value
 
         when:
-        AcademicAppointee affiliate2 = AcademicAppointee.findByAcadmeicAppointee(wid)
+        AcademicAppointee affiliate2 = AcademicAppointee.findById(wid)
 
         then:
         value
