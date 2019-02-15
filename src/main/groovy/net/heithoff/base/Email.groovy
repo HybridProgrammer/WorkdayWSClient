@@ -1,5 +1,7 @@
 package net.heithoff.base
 
+import groovy.transform.AutoClone
+import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
 import net.heithoff.App
 import net.heithoff.WorkdayClientService
@@ -11,16 +13,19 @@ import workday.com.bsvc.CommunicationUsageTypeObjectType
 import workday.com.bsvc.ContactInformationDataType
 import workday.com.bsvc.ContactInformationForPersonEventDataType
 import workday.com.bsvc.EmailAddressInformationDataType
+import workday.com.bsvc.EmailReferenceObjectIDType
+import workday.com.bsvc.EmailReferenceObjectType
 import workday.com.bsvc.MaintainContactInformationForPersonEventRequestType
 import workday.com.bsvc.MaintainContactInformationForPersonEventResponseType
 import workday.com.bsvc.WorkerObjectType
 import workday.com.bsvc.human_resources.HumanResourcesPort
 
 @Slf4j
+@AutoClone
 class Email {
     String parentWid
+    String wid
     String address
-    String comment
     String usageType
     String usageNamedId
     String usageWid
@@ -29,14 +34,22 @@ class Email {
     Boolean isPrimary
     Boolean dirty
     Boolean addOnly
+    Boolean delete
+    List<String> errors = []
 
     Email() {
         addOnly = true
+        isPublic = false
+        isPrimary = false
+        dirty = false
+        delete = false
     }
 
     Email(String parentWid, EmailAddressInformationDataType emailAddressData) {
         this.parentWid = parentWid
-        addOnly = false
+//        this.wid = emailAddressData.emailReference.ID.value
+        addOnly = true
+        delete = false
         if(emailAddressData.usageData.size() > 1) {
             log.warn("This library assumes their is only one usageData per email, Open an issue in github if this assumption is wrong, https://github.com/HybridProgrammer/WorkdayWSClient")
         }
@@ -93,6 +106,12 @@ class Email {
 
     private EmailAddressInformationDataType wrapEmailInformation() {
         EmailAddressInformationDataType emailAddressInfo = new EmailAddressInformationDataType(emailAddress: this.address)
+        if(this.delete) {
+            emailAddressInfo.delete = this.delete
+            emailAddressInfo.emailReference = new EmailReferenceObjectType()
+//            emailAddressInfo.emailReference.ID.add(new EmailReferenceObjectIDType(type: ??, value: ??))
+        }
+        emailAddressInfo.doNotReplaceAll = true
         CommunicationMethodUsageInformationDataType commMethod = new CommunicationMethodUsageInformationDataType(public: this.isPublic)
         emailAddressInfo.usageData.add(commMethod)
         CommunicationUsageTypeObjectType communicationUsageTypeObjectType = new CommunicationUsageTypeObjectType()
@@ -114,18 +133,29 @@ class Email {
         return communicationUsageTypeObjectIDType
     }
 
+    boolean isValid() {
+        errors.clear()
+        if(!usageType || usageType.isEmpty()) {
+            errors.push("usageType cannot be null.")
+        }
+        if(!usageNamedId || usageNamedId.isEmpty()) {
+            errors.push("usageNamedId cannot be null.")
+        }
+        if(!address || address.isEmpty()) {
+            errors.push("address cannot be null.")
+        }
+        if(!parentWid || parentWid.isEmpty()) {
+            errors.push("parentWid cannot be null.")
+        }
+
+        return errors.size() == 0
+    }
+
     void setAddress(String address) {
         if(this.address != address) {
             dirty = true
         }
         this.address = address
-    }
-
-    void setComment(String comment) {
-        if(this.comment != comment) {
-            dirty = true
-        }
-        this.comment = comment
     }
 
     void setUsageType(String usageType) {
@@ -185,5 +215,36 @@ class Email {
                 ", isPrimary=" + isPrimary +
                 ", dirty=" + dirty +
                 '}';
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        Email email = (Email) o
+
+        if (address != email.address) return false
+        if (comments != email.comments) return false
+        if (isPrimary != email.isPrimary) return false
+        if (isPublic != email.isPublic) return false
+        if (parentWid != email.parentWid) return false
+        if (usageNamedId != email.usageNamedId) return false
+        if (usageType != email.usageType) return false
+        if (usageWid != email.usageWid) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = (parentWid != null ? parentWid.hashCode() : 0)
+        result = 31 * result + (address != null ? address.hashCode() : 0)
+        result = 31 * result + (usageType != null ? usageType.hashCode() : 0)
+        result = 31 * result + (usageNamedId != null ? usageNamedId.hashCode() : 0)
+        result = 31 * result + (usageWid != null ? usageWid.hashCode() : 0)
+        result = 31 * result + (comments != null ? comments.hashCode() : 0)
+        result = 31 * result + (isPublic != null ? isPublic.hashCode() : 0)
+        result = 31 * result + (isPrimary != null ? isPrimary.hashCode() : 0)
+        return result
     }
 }

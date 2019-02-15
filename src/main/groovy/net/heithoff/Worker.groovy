@@ -68,14 +68,28 @@ class Worker {
         workerType.workerData.personalData.contactData.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
             Email email = new Email(wid, emailAddressData)
             this.emailAddresses.add(email)
-            if (email.isPrimary && "WORK".equalsIgnoreCase(email.usageType)) {
-                workEmail = email
-            }
         }
 
+        resetPrimaryEmailAddresses()
+    }
+
+    private void resetPrimaryEmailAddresses() {
+        emailAddresses.each {Email email ->
+            if (!email.delete && email.isPrimary && "WORK".equalsIgnoreCase(email.usageType)) {
+                workEmail = email
+            }
+
+            if (!email.delete && email.isPrimary && "HOME".equalsIgnoreCase(email.usageType)) {
+                personalEmail = email
+            }
+        }
         // if there is no primary work email select the first work email available
         if (!workEmail) {
-            workEmail = emailAddresses.find { "WORK".equalsIgnoreCase(it.usageType) }
+            workEmail = emailAddresses.find { !it.delete && "WORK".equalsIgnoreCase(it.usageType) }
+        }
+
+        if (!personalEmail) {
+            personalEmail = emailAddresses.find { !it.delete && "HOME".equalsIgnoreCase(it.usageType) }
         }
     }
 
@@ -201,6 +215,47 @@ class Worker {
         this.dateOfBirth = dateOfBirth
     }
 
+    void addEmail(Email email) {
+        if(!email.parentWid) {
+            email.parentWid = wid
+        }
+
+        if(!email.isValid()) {
+            throw new Exception("Email is not valid, errors: " + email.errors)
+        }
+
+        if(email.isPrimary) {
+            switch (email.usageType.toLowerCase()) {
+                case "work":
+                    if(workEmail) {
+                        workEmail.isPrimary = false
+                        workEmail = email
+                    }
+                    break
+                case "home":
+                    if(personalEmail) {
+                        personalEmail.isPrimary = false
+                        personalEmail = email
+                    }
+                    break
+            }
+        }
+
+        emailAddresses.add(email)
+    }
+
+    void removeEmail(Email email) {
+        if(workEmail.equals(email)) {
+            workEmail = null
+        }
+        if(personalEmail.equals(email)) {
+            personalEmail = null
+        }
+
+        email.delete = true
+        resetPrimaryEmailAddresses()
+    }
+
     boolean save() {
         if(isDirty()) {
             if(!updateWorkday()) {
@@ -222,6 +277,7 @@ class Worker {
             dirtyEmails.each {
                 it.save()
             }
+            emailAddresses = emailAddresses.findAll { !it.delete } //purge deleted emails
         }
 
         return true

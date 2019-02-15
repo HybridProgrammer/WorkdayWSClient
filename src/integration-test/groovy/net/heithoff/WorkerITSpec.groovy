@@ -1,5 +1,6 @@
 package net.heithoff
 
+import net.heithoff.base.Email
 import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
@@ -209,5 +210,47 @@ class WorkerITSpec extends Specification {
         then:
         value
         worker2.workEmail.address == worker1.workEmail.address
+    }
+
+    def "test add / remove email address"() {
+        given:
+        String wid = App.properties().get("test2.worker.wid.id").toString()
+        Worker worker1 = Worker.findById(wid)
+        println worker1
+
+        when: "update work email address"
+        Email expectedFinalEmail = worker1.workEmail
+        Email newEmail = worker1.workEmail.clone()
+        newEmail.address = "c" + newEmail.address
+        worker1.addEmail(newEmail)
+
+        then:
+        worker1.workEmail == newEmail
+        worker1.workEmail != expectedFinalEmail
+
+        when:
+        boolean value = worker1.save()
+
+        then:
+        value
+
+        when:
+        Worker worker2 = Worker.findById(wid)
+
+        then:
+        worker2.workEmail == newEmail
+        worker2.emailAddresses.contains(expectedFinalEmail)
+
+        when: "now let's clean up and remove the newEmail"
+        worker1.removeEmail(newEmail)
+        worker1.save()
+        worker2 = Worker.findById(wid)
+
+        then:
+        worker1.workEmail == expectedFinalEmail
+        worker2.workEmail == expectedFinalEmail
+        !worker2.emailAddresses.contains(newEmail)
+
+
     }
 }
