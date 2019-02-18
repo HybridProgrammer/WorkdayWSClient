@@ -48,11 +48,11 @@ class Worker {
         worker = workerType
         descriptor = worker.getWorkerDescriptor()
         List<WorkerObjectIDType> ids = workerType.workerReference.ID
-        wid = ids.find {it.type == "WID"}.value
-        if(workerType?.workerData?.personalData?.nameData?.legalNameData?.nameDetailData) {
+        wid = ids.find { it.type == "WID" }.value
+        if (workerType?.workerData?.personalData?.nameData?.legalNameData?.nameDetailData) {
             legalName = new LegalName(wid, workerType.workerData.personalData.nameData.legalNameData.nameDetailData)
         }
-        if(workerType?.workerData?.personalData?.nameData?.preferredNameData?.nameDetailData) {
+        if (workerType?.workerData?.personalData?.nameData?.preferredNameData?.nameDetailData) {
             preferredName = new PreferredName(wid, workerType.workerData.personalData.nameData.preferredNameData.nameDetailData)
         }
 
@@ -74,7 +74,7 @@ class Worker {
     }
 
     private void resetPrimaryEmailAddresses() {
-        emailAddresses.each {Email email ->
+        emailAddresses.each { Email email ->
             if (!email.delete && email.isPrimary && "WORK".equalsIgnoreCase(email.usageType)) {
                 workEmail = email
             }
@@ -86,10 +86,12 @@ class Worker {
         // if there is no primary work email select the first work email available
         if (!workEmail) {
             workEmail = emailAddresses.find { !it.delete && "WORK".equalsIgnoreCase(it.usageType) }
+            if(workEmail) workEmail.isPrimary = true
         }
 
         if (!personalEmail) {
             personalEmail = emailAddresses.find { !it.delete && "HOME".equalsIgnoreCase(it.usageType) }
+            if(personalEmail) personalEmail.isPrimary = true
         }
     }
 
@@ -202,38 +204,47 @@ class Worker {
     }
 
     Boolean isDirty() {
-        if(dateOfBirth != dateOfBirthCache) {
+        if (dateOfBirth != dateOfBirthCache) {
             return true
         }
         return dirty
     }
 
     void setDateOfBirth(GregorianCalendar dateOfBirth) {
-        if(this.dateOfBirth != dateOfBirth) {
+        if (this.dateOfBirth != dateOfBirth) {
             dirty = true
         }
         this.dateOfBirth = dateOfBirth
     }
 
+    Email getEmailByAddress(String address) {
+        Email email = emailAddresses.find {it.address.equalsIgnoreCase(address) && !it.delete}
+        return email
+    }
+
     void addEmail(Email email) {
-        if(!email.parentWid) {
+        if (!email.parentWid) {
             email.parentWid = wid
         }
 
-        if(!email.isValid()) {
+        if (!email.isValid()) {
             throw new Exception("Email is not valid, errors: " + email.errors)
         }
 
-        if(email.isPrimary) {
+        if(getEmailByAddress(email.address)) {
+            throw new Exception("Email address already exists")
+        }
+
+        if (email.isPrimary) {
             switch (email.usageType.toLowerCase()) {
                 case "work":
-                    if(workEmail) {
+                    if (workEmail) {
                         workEmail.isPrimary = false
                         workEmail = email
                     }
                     break
                 case "home":
-                    if(personalEmail) {
+                    if (personalEmail) {
                         personalEmail.isPrimary = false
                         personalEmail = email
                     }
@@ -245,42 +256,67 @@ class Worker {
     }
 
     void removeEmail(Email email) {
-        if(workEmail.equals(email)) {
+        if (workEmail.equals(email)) {
             workEmail = null
         }
-        if(personalEmail.equals(email)) {
+        if (personalEmail.equals(email)) {
             personalEmail = null
         }
 
+        email.isPrimary = false
         email.delete = true
         resetPrimaryEmailAddresses()
     }
 
     boolean save() {
-        if(isDirty()) {
-            if(!updateWorkday()) {
+        if (isDirty()) {
+            if (!updateWorkday()) {
                 throw new Exception("Failed to update workday Academic Appointee data.")
             }
         }
-        if(this.legalName.dirty) {
-            if(!legalName.save()) {
+        if (this.legalName.dirty) {
+            if (!legalName.save()) {
                 throw new Exception("Failed to update Legal Name")
             }
         }
-        if(this.preferredName.dirty) {
-            if(!preferredName.save()) {
+        if (this.preferredName.dirty) {
+            if (!preferredName.save()) {
                 throw new Exception("Failed to update preferred Name")
             }
         }
-        def dirtyEmails = emailAddresses.findAll {it.isDirty()}
-        if(dirtyEmails.size() > 0) {
-            dirtyEmails.each {
-                it.save()
-            }
-            emailAddresses = emailAddresses.findAll { !it.delete } //purge deleted emails
+
+        workEmail.save()
+        workEmail.resetDirty()
+
+        def dirtyEmails = emailAddresses.findAll { it.isDirty() }
+        List<EmailAddressInformationDataType> emailInfo = []
+        dirtyEmails.each {
+            emailInfo.add(Email.wrapEmailInformation(it))
+        }
+        Email.save(emailInfo, wid)
+        dirtyEmails.each {
+            it.resetDirty()
         }
 
+        purgeDeletedEmails()
+
+//        // must processes updates before deletes
+//        def dirtyEmailsUpdates = emailAddresses.findAll { it.isDirty() && !it.delete }
+//        dirtyEmailsUpdates.each {
+//            it.save()
+//        }
+//        def dirtyEmailsDeletes = emailAddresses.findAll { it.isDirty() && it.delete }
+//        dirtyEmailsDeletes.each {
+//            it.save()
+//        }
+
+
+
         return true
+    }
+
+    private void purgeDeletedEmails() {
+        emailAddresses = emailAddresses.findAll { !it.delete }
     }
 
     boolean updateWorkday() {
@@ -299,7 +335,7 @@ class Worker {
         def resources = workdayClientService.getResources("Human_Resources")
         try {
             ChangePersonalInformationResponseType response = ((HumanResourcesPort) resources["port"]).changePersonalInformation(request)
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error(e.message)
             throw e
         }
@@ -315,6 +351,19 @@ class Worker {
         return objectIDType
     }
 
+    void setWorkEmail(Email workEmail) {
+        if(this.workEmail && this.workEmail != workEmail) {
+            this.workEmail.isPrimary = false
+        }
+        this.workEmail = workEmail
+    }
+
+    void setPersonalEmail(Email personalEmail) {
+        if(this.personalEmail && this.personalEmail != personalEmail) {
+            this.personalEmail.isPrimary = false
+        }
+        this.personalEmail = personalEmail
+    }
 
     @Override
     public String toString() {

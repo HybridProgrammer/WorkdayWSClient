@@ -234,6 +234,15 @@ class WorkerITSpec extends Specification {
         then:
         value
 
+        when: "try to add the same email address a second time"
+        Integer nEmails = worker1.emailAddresses.size()
+        worker1.addEmail(newEmail)
+
+        then: "end up with the same number of email addresses"
+        Exception ex = thrown()
+        ex.message.contains("already exists")
+        worker1.emailAddresses.size() == nEmails
+
         when:
         Worker worker2 = Worker.findById(wid)
 
@@ -247,10 +256,12 @@ class WorkerITSpec extends Specification {
         worker2 = Worker.findById(wid)
 
         then:
-        worker1.workEmail == expectedFinalEmail
-        worker2.workEmail == expectedFinalEmail
+        worker1.workEmail.address.equalsIgnoreCase(expectedFinalEmail.address)
+        worker2.workEmail.address.equalsIgnoreCase(expectedFinalEmail.address)
         !worker2.emailAddresses.contains(newEmail)
 
 
     }
+
+
 }

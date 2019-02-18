@@ -33,12 +33,10 @@ class Email {
     Boolean isPublic
     Boolean isPrimary
     Boolean dirty
-    Boolean addOnly
     Boolean delete
     List<String> errors = []
 
     Email() {
-        addOnly = true
         isPublic = false
         isPrimary = false
         dirty = false
@@ -47,8 +45,9 @@ class Email {
 
     Email(String parentWid, EmailAddressInformationDataType emailAddressData) {
         this.parentWid = parentWid
-//        this.wid = emailAddressData.emailReference.ID.value
-        addOnly = true
+        List<EmailReferenceObjectIDType> ids = emailAddressData.emailReference.ID
+        wid = ids.find {it.type == "WID"}.value
+        this.wid = wid
         delete = false
         if(emailAddressData.usageData.size() > 1) {
             log.warn("This library assumes their is only one usageData per email, Open an issue in github if this assumption is wrong, https://github.com/HybridProgrammer/WorkdayWSClient")
@@ -77,18 +76,20 @@ class Email {
         resetDirty()
     }
 
-    boolean save() {
+    static boolean save(List<EmailAddressInformationDataType> emailInfo, String parentWid) {
         WorkdayClientService workdayClientService = WorkdayClientService.workdayClientService
         MaintainContactInformationForPersonEventRequestType request = new MaintainContactInformationForPersonEventRequestType()
         request.version = workdayClientService.version
-        request.addOnly = this.addOnly
+        request.addOnly = true
         request.businessProcessParameters = new BusinessProcessParametersType()
         request.businessProcessParameters.autoComplete = true
         request.businessProcessParameters.runNow = true
         request.maintainContactInformationData = new ContactInformationForPersonEventDataType()
-        request.maintainContactInformationData.workerReference = wrapWorkerObjectType(workdayClientService)
+        request.maintainContactInformationData.workerReference = wrapWorkerObjectType(workdayClientService, parentWid)
         request.maintainContactInformationData.workerContactInformationData = new ContactInformationDataType()
-        request.maintainContactInformationData.workerContactInformationData.emailAddressData.add(wrapEmailInformation())
+        emailInfo.each {
+            request.maintainContactInformationData.workerContactInformationData.emailAddressData.add(it)
+        }
         request.maintainContactInformationData.effectiveDate = workdayClientService.generateEffectiveDate()
 
         def resources = workdayClientService.getResources("Human_Resources")
@@ -99,38 +100,64 @@ class Email {
             throw e
         }
 
-        log.debug("saved email: " + this.address)
+        log.debug("saved all email addresses")
         return true
 
     }
 
-    private EmailAddressInformationDataType wrapEmailInformation() {
-        EmailAddressInformationDataType emailAddressInfo = new EmailAddressInformationDataType(emailAddress: this.address)
-        if(this.delete) {
-            emailAddressInfo.delete = this.delete
+    boolean save() {
+        boolean result = save([wrapEmailInformation()], parentWid)
+
+        if(result) {
+            resetDirty()
+            log.debug("saved email: " + this.address)
+        }
+        else {
+            log.error("failed to save email: " + this.address)
+        }
+        return result
+
+    }
+
+    static EmailAddressInformationDataType wrapEmailInformation(Email email) {
+        EmailAddressInformationDataType emailAddressInfo = new EmailAddressInformationDataType(emailAddress: email.address)
+        if(email.delete) {
+            emailAddressInfo.delete = email.delete
             emailAddressInfo.emailReference = new EmailReferenceObjectType()
-//            emailAddressInfo.emailReference.ID.add(new EmailReferenceObjectIDType(type: ??, value: ??))
+            emailAddressInfo.emailReference.ID.add(new EmailReferenceObjectIDType(type: "WID", value: email.wid))
         }
         emailAddressInfo.doNotReplaceAll = true
-        CommunicationMethodUsageInformationDataType commMethod = new CommunicationMethodUsageInformationDataType(public: this.isPublic)
+        CommunicationMethodUsageInformationDataType commMethod = new CommunicationMethodUsageInformationDataType(public: email.isPublic)
         emailAddressInfo.usageData.add(commMethod)
         CommunicationUsageTypeObjectType communicationUsageTypeObjectType = new CommunicationUsageTypeObjectType()
-        communicationUsageTypeObjectType.ID.add(wrapCommunicationUsageTypeId())
-        commMethod.typeData.add(new CommunicationUsageTypeDataType(primary: this.isPrimary, typeReference: communicationUsageTypeObjectType))
+        communicationUsageTypeObjectType.ID.add(wrapCommunicationUsageTypeId(email))
+        commMethod.typeData.add(new CommunicationUsageTypeDataType(primary: email.isPrimary, typeReference: communicationUsageTypeObjectType))
         return emailAddressInfo
     }
 
-    private WorkerObjectType wrapWorkerObjectType(WorkdayClientService workdayClientService) {
+    EmailAddressInformationDataType wrapEmailInformation() {
+        return wrapEmailInformation(this)
+    }
+
+    static WorkerObjectType wrapWorkerObjectType(WorkdayClientService workdayClientService, String parentWid) {
         WorkerObjectType objectType = new WorkerObjectType()
         objectType.ID.add(workdayClientService.wrapWidWithWorkerObjectIdType(parentWid))
         return objectType
     }
 
-    private CommunicationUsageTypeObjectIDType wrapCommunicationUsageTypeId() {
+    WorkerObjectType wrapWorkerObjectType(WorkdayClientService workdayClientService) {
+        return wrapWorkerObjectType(workdayClientService, parentWid)
+    }
+
+    static CommunicationUsageTypeObjectIDType wrapCommunicationUsageTypeId(Email email) {
         CommunicationUsageTypeObjectIDType communicationUsageTypeObjectIDType = new CommunicationUsageTypeObjectIDType()
-        communicationUsageTypeObjectIDType.type = this.usageNamedId
-        communicationUsageTypeObjectIDType.value = this.usageType
+        communicationUsageTypeObjectIDType.type = email.usageNamedId
+        communicationUsageTypeObjectIDType.value = email.usageType
         return communicationUsageTypeObjectIDType
+    }
+
+    CommunicationUsageTypeObjectIDType wrapCommunicationUsageTypeId() {
+        return wrapCommunicationUsageTypeId(this)
     }
 
     boolean isValid() {
@@ -193,6 +220,13 @@ class Email {
         this.isPrimary = isPrimary
     }
 
+    void setDelete(Boolean delete) {
+        if(this.delete != delete) {
+            dirty = true
+        }
+        this.delete = delete
+    }
+
     void resetDirty() {
         dirty = false
     }
@@ -206,13 +240,14 @@ class Email {
     public String toString() {
         return "Email{" +
                 "address='" + address + '\'' +
-                ", comment='" + comment + '\'' +
+                ", comments='" + comments + '\'' +
                 ", usageType='" + usageType + '\'' +
                 ", usageNamedId='" + usageNamedId + '\'' +
                 ", usageWid='" + usageWid + '\'' +
                 ", comments='" + comments + '\'' +
                 ", isPublic=" + isPublic +
                 ", isPrimary=" + isPrimary +
+                ", delete=" + delete +
                 ", dirty=" + dirty +
                 '}';
     }
