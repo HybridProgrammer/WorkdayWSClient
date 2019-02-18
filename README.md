@@ -8,6 +8,8 @@ fetch and update data in Workday. The complexities in handling webservices shoul
 
 While the project is written in Groovy any Java (JDK) language can load the class files (Jar) and use the objects. 
 
+![Reduced Code]()
+
 ## Examples
 Finding an Academic Appointee by WID
 
