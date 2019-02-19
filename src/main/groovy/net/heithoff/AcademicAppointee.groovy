@@ -2,6 +2,7 @@ package net.heithoff
 
 import groovy.util.logging.Slf4j
 import net.heithoff.base.LegalName
+import net.heithoff.base.Person
 import net.heithoff.base.PreferredName
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
@@ -9,11 +10,10 @@ import workday.com.bsvc.human_resources.HumanResourcesPort
 import javax.xml.datatype.DatatypeFactory
 
 @Slf4j
-class AcademicAppointee {
+class AcademicAppointee implements Person {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     AcademicAppointeeType academicAppointeeType
     Boolean dirty
-    String wid
     String descriptor
     String gender
     GregorianCalendar dateOfBirthCache

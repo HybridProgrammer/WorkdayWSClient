@@ -3,6 +3,7 @@ package net.heithoff
 import groovy.util.logging.Slf4j
 import net.heithoff.base.Email
 import net.heithoff.base.LegalName
+import net.heithoff.base.Person
 import net.heithoff.base.PreferredName
 import workday.com.bsvc.BusinessProcessParametersType
 import workday.com.bsvc.ChangePersonalInformationBusinessProcessDataType
@@ -26,12 +27,11 @@ import javax.xml.datatype.DatatypeConfigurationException
 import javax.xml.datatype.DatatypeFactory
 
 @Slf4j
-class Worker {
+class Worker implements Person {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     WorkerType worker
     Boolean dirty
     String descriptor
-    String wid
     GregorianCalendar dateOfBirthCache
     GregorianCalendar dateOfBirth
     LegalName legalName = new LegalName()
@@ -66,7 +66,7 @@ class Worker {
     private void loadEmailData(WorkerType workerType) {
         emailAddresses = []
         workerType.workerData.personalData.contactData.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
-            Email email = new Email(wid, emailAddressData)
+            Email email = new Email(this, emailAddressData)
             this.emailAddresses.add(email)
         }
 
@@ -117,11 +117,11 @@ class Worker {
                 ResponseFilterType responseFilter = workdayClientService.getDefaultResponseFilterType(currentPage)
                 request.setResponseFilter(responseFilter)
 
-                // Set the desired response group(s) to return
-                WorkerResponseGroupType responseGroup = new WorkerResponseGroupType()
-                responseGroup.setIncludeReference(true)
-                responseGroup.setIncludePersonalInformation(true)
-                request.setResponseGroup(responseGroup)
+//                // Set the desired response group(s) to return
+//                WorkerResponseGroupType responseGroup = new WorkerResponseGroupType()
+//                responseGroup.setIncludeReference(true)
+//                responseGroup.setIncludePersonalInformation(true)
+//                request.setResponseGroup(responseGroup)
 
                 // Submit the request creating the "response" object
                 GetWorkersResponseType response = ((HumanResourcesPort) resources["port"]).getWorkers(request)
@@ -223,8 +223,8 @@ class Worker {
     }
 
     void addEmail(Email email) {
-        if (!email.parentWid) {
-            email.parentWid = wid
+        if (!email.person.wid) {
+            email.person.wid = wid
         }
 
         if (!email.isValid()) {
@@ -285,21 +285,24 @@ class Worker {
             }
         }
 
+        saveEmails()
 
+        return true
+    }
+
+    private void saveEmails() {
         List<Email> dirtyEmails = []
-        Boolean replaceAll = false
-        if(emailAddresses.find {it.primaryChanged}) { // must replace all entries when primary email has changed
+        Boolean replaceAll = hasPrimaryEmailChange()
+        if (replaceAll) {
             dirtyEmails = emailAddresses.findAll { !it.delete }
-            replaceAll = true
-        }
-        else {
+        } else {
             dirtyEmails = emailAddresses.findAll { it.isDirty() }
         }
         List<EmailAddressInformationDataType> emailInfo = []
         dirtyEmails.each {
             EmailAddressInformationDataType emailInformation = Email.wrapEmailInformation(it, replaceAll)
-            if(replaceAll) {
-                emailInformation.emailReference = null // must remove reference when replace all
+            if (replaceAll) {
+                emailInformation.emailReference = null // must remove reference when replace all is true
             }
             emailInfo.add(emailInformation)
         }
@@ -309,20 +312,10 @@ class Worker {
         }
 
         purgeDeletedEmails()
+    }
 
-//        // must processes updates before deletes
-//        def dirtyEmailsUpdates = emailAddresses.findAll { it.isDirty() && !it.delete }
-//        dirtyEmailsUpdates.each {
-//            it.save()
-//        }
-//        def dirtyEmailsDeletes = emailAddresses.findAll { it.isDirty() && it.delete }
-//        dirtyEmailsDeletes.each {
-//            it.save()
-//        }
-
-
-
-        return true
+    boolean hasPrimaryEmailChange() {
+        return emailAddresses.find { it.primaryChanged } != null
     }
 
     private void purgeDeletedEmails() {

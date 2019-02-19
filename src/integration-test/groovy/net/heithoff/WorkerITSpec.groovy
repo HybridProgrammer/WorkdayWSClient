@@ -275,7 +275,7 @@ class WorkerITSpec extends Specification {
 
         then:
         worker1.save()
-        worker1.emailAddresses.size() == 2
+        worker1.emailAddresses.size() >= 2
     }
 
     def "test swap primary email address"() {
@@ -305,12 +305,40 @@ class WorkerITSpec extends Specification {
         Email deletedPrimaryWorkEmail = worker1.workEmail
 
         when: "update work email address"
+        Integer nEmails = worker1.emailAddresses.size()
         worker1.removeEmail(deletedPrimaryWorkEmail)
         worker1.save()
         worker1 = Worker.findById(wid)
 
         then:
         worker1.workEmail != deletedPrimaryWorkEmail
+        worker1.emailAddresses.size() == nEmails - 1
+    }
+
+    def "test delete secondary email address"() {
+        given:
+        String wid = App.properties().get("test2.worker.wid.id").toString()
+        Worker worker1 = Worker.findById(wid)
+        println worker1
+
+        when: "update work email address"
+        Email expectedFinalEmail = worker1.workEmail
+        Email newEmail = worker1.workEmail.clone()
+        newEmail.address = "c" + newEmail.address
+        newEmail.isPrimary = false
+        worker1.addEmail(newEmail)
+
+        then:
+        worker1.save()
+        newEmail.isPrimary == false
+
+        when:
+        Integer nEmails = worker1.emailAddresses.size()
+        worker1.removeEmail(newEmail)
+
+        then:
+        worker1.save()
+        worker1.emailAddresses.size() == nEmails - 1
     }
 
 }

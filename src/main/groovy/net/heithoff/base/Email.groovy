@@ -1,29 +1,18 @@
 package net.heithoff.base
 
 import groovy.transform.AutoClone
-import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
+import net.heithoff.AcademicAppointee
 import net.heithoff.App
 import net.heithoff.WorkdayClientService
-import workday.com.bsvc.BusinessProcessParametersType
-import workday.com.bsvc.CommunicationMethodUsageInformationDataType
-import workday.com.bsvc.CommunicationUsageTypeDataType
-import workday.com.bsvc.CommunicationUsageTypeObjectIDType
-import workday.com.bsvc.CommunicationUsageTypeObjectType
-import workday.com.bsvc.ContactInformationDataType
-import workday.com.bsvc.ContactInformationForPersonEventDataType
-import workday.com.bsvc.EmailAddressInformationDataType
-import workday.com.bsvc.EmailReferenceObjectIDType
-import workday.com.bsvc.EmailReferenceObjectType
-import workday.com.bsvc.MaintainContactInformationForPersonEventRequestType
-import workday.com.bsvc.MaintainContactInformationForPersonEventResponseType
-import workday.com.bsvc.WorkerObjectType
+import net.heithoff.Worker
+import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 
 @Slf4j
 @AutoClone
 class Email {
-    String parentWid
+    Person person
     String wid
     String address
     String usageType
@@ -45,11 +34,14 @@ class Email {
         delete = false
     }
 
-    Email(String parentWid, EmailAddressInformationDataType emailAddressData) {
-        this.parentWid = parentWid
-        List<EmailReferenceObjectIDType> ids = emailAddressData.emailReference.ID
-        wid = ids.find {it.type == "WID"}.value
-        this.wid = wid
+    Email(Person parent, EmailAddressInformationDataType emailAddressData) {
+        this.person = parent
+        if(emailAddressData.emailReference) {
+            List<EmailReferenceObjectIDType> ids = emailAddressData.emailReference.ID
+            wid = ids.find {it.type == "WID"}.value
+            this.wid = wid
+        }
+
         delete = false
         if(emailAddressData.usageData.size() > 1) {
             log.warn("This library assumes their is only one usageData per email, Open an issue in github if this assumption is wrong, https://github.com/HybridProgrammer/WorkdayWSClient")
@@ -109,7 +101,7 @@ class Email {
     }
 
     boolean save() {
-        boolean result = save([wrapEmailInformation()], parentWid)
+        boolean result = save([wrapEmailInformation()], person.wid)
 
         if(result) {
             resetDirty()
@@ -126,6 +118,20 @@ class Email {
         EmailAddressInformationDataType emailAddressInfo = new EmailAddressInformationDataType(emailAddress: email.address)
         if(email.delete) {
             emailAddressInfo.delete = email.delete
+            if(!email.wid) {
+                if(email.person instanceof Worker) {
+                    def worker = Worker.findById(email.person.wid)
+                    email.wid = worker.emailAddresses.find {it.address == email.address}?.wid
+                }
+                else if(email.person instanceof AcademicAppointee) {
+                    def academicAppointee = AcademicAppointee.findById(email.person.wid)
+//                    email.wid = AcademicAppointee.emailAddresses.find {it.address == email.address}?.wid
+                }
+            }
+            if(email.wid) {
+                emailAddressInfo.emailReference = new EmailReferenceObjectType()
+                emailAddressInfo.emailReference.ID.add(new EmailReferenceObjectIDType(type: "WID", value: email.wid))
+            }
         }
         emailAddressInfo.doNotReplaceAll = !replaceAll
         CommunicationMethodUsageInformationDataType commMethod = new CommunicationMethodUsageInformationDataType(public: email.isPublic)
@@ -147,7 +153,7 @@ class Email {
     }
 
     WorkerObjectType wrapWorkerObjectType(WorkdayClientService workdayClientService) {
-        return wrapWorkerObjectType(workdayClientService, parentWid)
+        return wrapWorkerObjectType(workdayClientService, person.wid)
     }
 
     static CommunicationUsageTypeObjectIDType wrapCommunicationUsageTypeId(Email email) {
@@ -172,7 +178,7 @@ class Email {
         if(!address || address.isEmpty()) {
             errors.push("address cannot be null.")
         }
-        if(!parentWid || parentWid.isEmpty()) {
+        if(!person.wid || person.wid.isEmpty()) {
             errors.push("parentWid cannot be null.")
         }
 
@@ -266,7 +272,7 @@ class Email {
         if (comments != email.comments) return false
         if (isPrimary != email.isPrimary) return false
         if (isPublic != email.isPublic) return false
-        if (parentWid != email.parentWid) return false
+        if (person.wid != email.person.wid) return false
         if (usageNamedId != email.usageNamedId) return false
         if (usageType != email.usageType) return false
         if (usageWid != email.usageWid) return false
@@ -276,7 +282,7 @@ class Email {
 
     int hashCode() {
         int result
-        result = (parentWid != null ? parentWid.hashCode() : 0)
+        result = (person.wid != null ? person.wid.hashCode() : 0)
         result = 31 * result + (address != null ? address.hashCode() : 0)
         result = 31 * result + (usageType != null ? usageType.hashCode() : 0)
         result = 31 * result + (usageNamedId != null ? usageNamedId.hashCode() : 0)
