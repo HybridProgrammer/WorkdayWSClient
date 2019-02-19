@@ -32,6 +32,7 @@ class Email {
     String comments
     Boolean isPublic
     Boolean isPrimary
+    Boolean primaryChanged
     Boolean dirty
     Boolean delete
     List<String> errors = []
@@ -39,6 +40,7 @@ class Email {
     Email() {
         isPublic = false
         isPrimary = false
+        primaryChanged = false
         dirty = false
         delete = false
     }
@@ -61,6 +63,7 @@ class Email {
         this.address = emailAddressData.emailAddress
         this.isPublic = communicationMethodUsageInformation.public
         this.isPrimary = usageTypeData.primary
+        this.primaryChanged = false
         this.comments = communicationMethodUsageInformation.comments
         usageTypeData.typeReference.ID.each { CommunicationUsageTypeObjectIDType id ->
             usageNamedId = App.properties().get("email.communication.usage.type.id", "Communication_Usage_Type_ID").toString()
@@ -85,12 +88,12 @@ class Email {
         request.businessProcessParameters.autoComplete = true
         request.businessProcessParameters.runNow = true
         request.maintainContactInformationData = new ContactInformationForPersonEventDataType()
+        request.maintainContactInformationData.effectiveDate = workdayClientService.generateEffectiveDate()
         request.maintainContactInformationData.workerReference = wrapWorkerObjectType(workdayClientService, parentWid)
         request.maintainContactInformationData.workerContactInformationData = new ContactInformationDataType()
         emailInfo.each {
             request.maintainContactInformationData.workerContactInformationData.emailAddressData.add(it)
         }
-        request.maintainContactInformationData.effectiveDate = workdayClientService.generateEffectiveDate()
 
         def resources = workdayClientService.getResources("Human_Resources")
         try {
@@ -119,14 +122,12 @@ class Email {
 
     }
 
-    static EmailAddressInformationDataType wrapEmailInformation(Email email) {
+    static EmailAddressInformationDataType wrapEmailInformation(Email email, Boolean replaceAll) {
         EmailAddressInformationDataType emailAddressInfo = new EmailAddressInformationDataType(emailAddress: email.address)
         if(email.delete) {
             emailAddressInfo.delete = email.delete
-            emailAddressInfo.emailReference = new EmailReferenceObjectType()
-            emailAddressInfo.emailReference.ID.add(new EmailReferenceObjectIDType(type: "WID", value: email.wid))
         }
-        emailAddressInfo.doNotReplaceAll = true
+        emailAddressInfo.doNotReplaceAll = !replaceAll
         CommunicationMethodUsageInformationDataType commMethod = new CommunicationMethodUsageInformationDataType(public: email.isPublic)
         emailAddressInfo.usageData.add(commMethod)
         CommunicationUsageTypeObjectType communicationUsageTypeObjectType = new CommunicationUsageTypeObjectType()
@@ -136,7 +137,7 @@ class Email {
     }
 
     EmailAddressInformationDataType wrapEmailInformation() {
-        return wrapEmailInformation(this)
+        return wrapEmailInformation(this, false)
     }
 
     static WorkerObjectType wrapWorkerObjectType(WorkdayClientService workdayClientService, String parentWid) {
@@ -216,6 +217,9 @@ class Email {
     void setIsPrimary(Boolean isPrimary) {
         if(this.isPrimary != isPrimary) {
             dirty = true
+            if(this.isPrimary) {
+                primaryChanged = true
+            }
         }
         this.isPrimary = isPrimary
     }
@@ -229,6 +233,7 @@ class Email {
 
     void resetDirty() {
         dirty = false
+        primaryChanged = false
     }
 
     boolean isDirty() {
@@ -242,8 +247,7 @@ class Email {
                 "address='" + address + '\'' +
                 ", comments='" + comments + '\'' +
                 ", usageType='" + usageType + '\'' +
-                ", usageNamedId='" + usageNamedId + '\'' +
-                ", usageWid='" + usageWid + '\'' +
+                ", wid='" + wid + '\'' +
                 ", comments='" + comments + '\'' +
                 ", isPublic=" + isPublic +
                 ", isPrimary=" + isPrimary +

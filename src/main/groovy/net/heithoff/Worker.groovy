@@ -285,13 +285,23 @@ class Worker {
             }
         }
 
-        workEmail.save()
-        workEmail.resetDirty()
 
-        def dirtyEmails = emailAddresses.findAll { it.isDirty() }
+        List<Email> dirtyEmails = []
+        Boolean replaceAll = false
+        if(emailAddresses.find {it.primaryChanged}) { // must replace all entries when primary email has changed
+            dirtyEmails = emailAddresses.findAll { !it.delete }
+            replaceAll = true
+        }
+        else {
+            dirtyEmails = emailAddresses.findAll { it.isDirty() }
+        }
         List<EmailAddressInformationDataType> emailInfo = []
         dirtyEmails.each {
-            emailInfo.add(Email.wrapEmailInformation(it))
+            EmailAddressInformationDataType emailInformation = Email.wrapEmailInformation(it, replaceAll)
+            if(replaceAll) {
+                emailInformation.emailReference = null // must remove reference when replace all
+            }
+            emailInfo.add(emailInformation)
         }
         Email.save(emailInfo, wid)
         dirtyEmails.each {
@@ -356,6 +366,8 @@ class Worker {
             this.workEmail.isPrimary = false
         }
         this.workEmail = workEmail
+        this.workEmail.isPrimary = true
+        this.workEmail.primaryChanged = true
     }
 
     void setPersonalEmail(Email personalEmail) {
@@ -363,6 +375,8 @@ class Worker {
             this.personalEmail.isPrimary = false
         }
         this.personalEmail = personalEmail
+        this.personalEmail.isPrimary = true
+        this.personalEmail.primaryChanged = true
     }
 
     @Override

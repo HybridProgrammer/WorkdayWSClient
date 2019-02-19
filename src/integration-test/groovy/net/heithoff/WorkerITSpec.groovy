@@ -259,9 +259,58 @@ class WorkerITSpec extends Specification {
         worker1.workEmail.address.equalsIgnoreCase(expectedFinalEmail.address)
         worker2.workEmail.address.equalsIgnoreCase(expectedFinalEmail.address)
         !worker2.emailAddresses.contains(newEmail)
-
-
     }
 
+    def "test create new email address"() {
+        given:
+        String wid = App.properties().get("test2.worker.wid.id").toString()
+        Worker worker1 = Worker.findById(wid)
+        println worker1
+
+        when: "update work email address"
+        Email expectedFinalEmail = worker1.workEmail
+        Email newEmail = worker1.workEmail.clone()
+        newEmail.address = "c" + newEmail.address
+        worker1.addEmail(newEmail)
+
+        then:
+        worker1.save()
+        worker1.emailAddresses.size() == 2
+    }
+
+    def "test swap primary email address"() {
+        given:
+        String wid = App.properties().get("test2.worker.wid.id").toString()
+        Worker worker1 = Worker.findById(wid)
+        Integer nEmails = worker1.emailAddresses.size()
+        assert worker1.emailAddresses.findAll {it.usageType.equalsIgnoreCase("work")}?.size() >= 2
+        Email expectedPrimaryWorkEmail = worker1.emailAddresses.find { !it.isPrimary }
+        assert expectedPrimaryWorkEmail != worker1.workEmail
+
+        when: "update work email address"
+        worker1.workEmail = expectedPrimaryWorkEmail
+        worker1.save()
+        worker1 = Worker.findById(wid)
+
+        then:
+        expectedPrimaryWorkEmail == worker1.workEmail
+        nEmails == worker1.emailAddresses.size()
+    }
+
+    def "test delete primary email address"() {
+        given:
+        String wid = App.properties().get("test2.worker.wid.id").toString()
+        Worker worker1 = Worker.findById(wid)
+        assert worker1.emailAddresses.findAll {it.usageType.equalsIgnoreCase("work")}?.size() >= 2
+        Email deletedPrimaryWorkEmail = worker1.workEmail
+
+        when: "update work email address"
+        worker1.removeEmail(deletedPrimaryWorkEmail)
+        worker1.save()
+        worker1 = Worker.findById(wid)
+
+        then:
+        worker1.workEmail != deletedPrimaryWorkEmail
+    }
 
 }
