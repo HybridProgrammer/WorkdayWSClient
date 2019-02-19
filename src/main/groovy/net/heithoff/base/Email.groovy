@@ -34,8 +34,8 @@ class Email {
         delete = false
     }
 
-    Email(Person parent, EmailAddressInformationDataType emailAddressData) {
-        this.person = parent
+    Email(Person person, EmailAddressInformationDataType emailAddressData) {
+        this.person = person
         if(emailAddressData.emailReference) {
             List<EmailReferenceObjectIDType> ids = emailAddressData.emailReference.ID
             wid = ids.find {it.type == "WID"}.value
@@ -100,8 +100,8 @@ class Email {
 
     }
 
-    boolean save() {
-        boolean result = save([wrapEmailInformation()], person.wid)
+    boolean save(String parentWid) {
+        boolean result = save([wrapEmailInformation()], parentWid)
 
         if(result) {
             resetDirty()
@@ -152,19 +152,11 @@ class Email {
         return objectType
     }
 
-    WorkerObjectType wrapWorkerObjectType(WorkdayClientService workdayClientService) {
-        return wrapWorkerObjectType(workdayClientService, person.wid)
-    }
-
     static CommunicationUsageTypeObjectIDType wrapCommunicationUsageTypeId(Email email) {
         CommunicationUsageTypeObjectIDType communicationUsageTypeObjectIDType = new CommunicationUsageTypeObjectIDType()
         communicationUsageTypeObjectIDType.type = email.usageNamedId
         communicationUsageTypeObjectIDType.value = email.usageType
         return communicationUsageTypeObjectIDType
-    }
-
-    CommunicationUsageTypeObjectIDType wrapCommunicationUsageTypeId() {
-        return wrapCommunicationUsageTypeId(this)
     }
 
     boolean isValid() {
@@ -272,7 +264,7 @@ class Email {
         if (comments != email.comments) return false
         if (isPrimary != email.isPrimary) return false
         if (isPublic != email.isPublic) return false
-        if (person.wid != email.person.wid) return false
+        if (wid != wid) return false
         if (usageNamedId != email.usageNamedId) return false
         if (usageType != email.usageType) return false
         if (usageWid != email.usageWid) return false
@@ -282,7 +274,7 @@ class Email {
 
     int hashCode() {
         int result
-        result = (person.wid != null ? person.wid.hashCode() : 0)
+        result = (wid != null ? wid.hashCode() : 0)
         result = 31 * result + (address != null ? address.hashCode() : 0)
         result = 31 * result + (usageType != null ? usageType.hashCode() : 0)
         result = 31 * result + (usageNamedId != null ? usageNamedId.hashCode() : 0)

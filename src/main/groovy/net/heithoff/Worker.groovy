@@ -1,7 +1,7 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
-import net.heithoff.base.Email
+import net.heithoff.base.EmailAddresses
 import net.heithoff.base.LegalName
 import net.heithoff.base.Person
 import net.heithoff.base.PreferredName
@@ -10,14 +10,12 @@ import workday.com.bsvc.ChangePersonalInformationBusinessProcessDataType
 import workday.com.bsvc.ChangePersonalInformationDataType
 import workday.com.bsvc.ChangePersonalInformationRequestType
 import workday.com.bsvc.ChangePersonalInformationResponseType
-import workday.com.bsvc.EmailAddressInformationDataType
 import workday.com.bsvc.GetWorkersRequestType
 import workday.com.bsvc.GetWorkersResponseType
 import workday.com.bsvc.ResponseFilterType
 import workday.com.bsvc.WorkerObjectIDType
 import workday.com.bsvc.WorkerObjectType
 import workday.com.bsvc.WorkerRequestReferencesType
-import workday.com.bsvc.WorkerResponseGroupType
 import workday.com.bsvc.WorkerType
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.ProcessingFaultMsg
@@ -27,7 +25,7 @@ import javax.xml.datatype.DatatypeConfigurationException
 import javax.xml.datatype.DatatypeFactory
 
 @Slf4j
-class Worker implements Person {
+class Worker implements Person, EmailAddresses {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     WorkerType worker
     Boolean dirty
@@ -55,7 +53,7 @@ class Worker implements Person {
 
         this.dateOfBirth = workerType.workerData.personalData.birthDate?.toGregorianCalendar()
         this.dateOfBirthCache = workerType.workerData.personalData.birthDate?.toGregorianCalendar()
-        loadEmailData(workerType)
+        loadEmailData(this, workerType)
 
         resetDirty()
     }
@@ -199,7 +197,7 @@ class Worker implements Person {
             }
         }
 
-        saveEmails()
+        saveEmails(wid)
 
         return true
     }
