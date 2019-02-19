@@ -128,7 +128,7 @@ class Email {
 //                    email.wid = AcademicAppointee.emailAddresses.find {it.address == email.address}?.wid
                 }
             }
-            if(email.wid) {
+            if(email.wid) { // wid won't exist when it's a new email address
                 emailAddressInfo.emailReference = new EmailReferenceObjectType()
                 emailAddressInfo.emailReference.ID.add(new EmailReferenceObjectIDType(type: "WID", value: email.wid))
             }

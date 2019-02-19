@@ -1,6 +1,7 @@
 package net.heithoff
 
 import net.heithoff.base.Email
+import org.junit.Ignore
 import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
@@ -220,8 +221,8 @@ class WorkerITSpec extends Specification {
 
         when: "update work email address"
         Email expectedFinalEmail = worker1.workEmail
-        Email newEmail = worker1.workEmail.clone()
-        newEmail.address = "c" + newEmail.address
+        Email newEmail = TestUtil.quickNewEmail(worker1)
+        newEmail.isPrimary = true
         worker1.addEmail(newEmail)
 
         then:
@@ -268,9 +269,7 @@ class WorkerITSpec extends Specification {
         println worker1
 
         when: "update work email address"
-        Email expectedFinalEmail = worker1.workEmail
-        Email newEmail = worker1.workEmail.clone()
-        newEmail.address = "c" + newEmail.address
+        Email newEmail = TestUtil.quickNewEmail(worker1)
         worker1.addEmail(newEmail)
 
         then:
@@ -322,10 +321,7 @@ class WorkerITSpec extends Specification {
         println worker1
 
         when: "update work email address"
-        Email expectedFinalEmail = worker1.workEmail
-        Email newEmail = worker1.workEmail.clone()
-        newEmail.address = "c" + newEmail.address
-        newEmail.isPrimary = false
+        Email newEmail = TestUtil.quickNewEmail(worker1)
         worker1.addEmail(newEmail)
 
         then:
@@ -340,5 +336,26 @@ class WorkerITSpec extends Specification {
         worker1.save()
         worker1.emailAddresses.size() == nEmails - 1
     }
+
+    @Ignore
+    def "test clean emails"() {
+        given:
+        String wid = App.properties().get("test2.worker.wid.id").toString()
+        Worker worker1 = Worker.findById(wid)
+        println worker1
+
+        when: "update work email address"
+        worker1.workEmail.address = Math.random() + "username@example.com"
+        worker1.emailAddresses.each {
+            if(!it.address.equalsIgnoreCase(worker1.workEmail.address)) {
+                it.delete = true
+            }
+        }
+
+        then:
+        worker1.save()
+        worker1.emailAddresses.size() == 1
+    }
+
 
 }
