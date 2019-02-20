@@ -1,6 +1,8 @@
 package net.heithoff
 
 import groovy.util.logging.Slf4j
+import net.heithoff.base.ContactInformation
+import net.heithoff.base.EmailAddresses
 import net.heithoff.base.LegalName
 import net.heithoff.base.Person
 import net.heithoff.base.PreferredName
@@ -10,7 +12,7 @@ import workday.com.bsvc.human_resources.HumanResourcesPort
 import javax.xml.datatype.DatatypeFactory
 
 @Slf4j
-class AcademicAppointee implements Person {
+class AcademicAppointee implements Person, ContactInformation {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     AcademicAppointeeType academicAppointeeType
     Boolean dirty
@@ -61,6 +63,7 @@ class AcademicAppointee implements Person {
 
         this.usesTobacco = academicAppointeeType.academicAppointeeData.personalInformationData.usesTobacco
 
+        hydrateHomeEmail(this)
         resetDirty()
     }
 

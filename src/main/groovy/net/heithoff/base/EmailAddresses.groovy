@@ -1,16 +1,78 @@
 package net.heithoff.base
 
+import groovy.util.logging.Slf4j
+import net.heithoff.App
+import net.heithoff.WorkdayClientService
+import workday.com.bsvc.AcademicAppointeeType
+import workday.com.bsvc.ChangeHomeContactInformationBusinessProcessDataType
+import workday.com.bsvc.ChangeHomeContactInformationResponseDataType
+import workday.com.bsvc.ChangeHomeContactInformationResponseWrapperType
+import workday.com.bsvc.CommunicationMethodUsageInformationDataType
+import workday.com.bsvc.CommunicationUsageTypeDataType
 import workday.com.bsvc.EmailAddressInformationDataType
+import workday.com.bsvc.GetChangeHomeContactInformationRequestReferencesType
+import workday.com.bsvc.GetChangeHomeContactInformationRequestType
+import workday.com.bsvc.GetChangeHomeContactInformationResponseType
+import workday.com.bsvc.PersonEmailDataType
+import workday.com.bsvc.ResponseFilterType
+import workday.com.bsvc.RoleObjectType
 import workday.com.bsvc.WorkerType
+import workday.com.bsvc.human_resources.HumanResourcesPort
 
+@Slf4j
 trait EmailAddresses {
+    static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
+    List<EmailAddressInformationDataType> emailAddressData
     Email workEmail
     Email personalEmail
     List<Email> emailAddresses
 
+    void loadEmailData(Person parent, List<ChangeHomeContactInformationResponseDataType> emailChanges) {
+        log.debug(emailChanges.first().changeHomeContactInformation.first().changeHomeContactInformationData.first().personContactInformationData.toString())
+        emailChanges.each { ChangeHomeContactInformationResponseDataType o1 ->
+            o1.changeHomeContactInformation.each { ChangeHomeContactInformationResponseWrapperType o2 ->
+                o2.changeHomeContactInformationData.each { ChangeHomeContactInformationBusinessProcessDataType o3 ->
+                    o3.personContactInformationData.personEmailInformationData.emailInformationData.each { PersonEmailDataType personEmailDataType ->
+                        Email email = new Email()
+                        email.person = parent
+                        personEmailDataType.usageData.each { CommunicationMethodUsageInformationDataType usage ->
+                            email.isPublic = usage.public
+                            email.comments = usage.comments
+                            usage.typeData.each { CommunicationUsageTypeDataType usageType ->
+                                email.isPrimary = usageType.primary
+                                usageType.typeReference.ID.each {
+                                    email.usageType = it.value
+                                    email.usageNamedId = it.type
+                                }
+                            }
+                        }
+                        email.address = personEmailDataType.emailData.first().emailAddress
+                        email.wid = personEmailDataType.emailID
+                    }
+                }
+            }
+        }
+
+//        emailChanges.each { ChangeHomeContactInformationResponseDataType emailData ->
+//
+//        }
+    }
+
+
+    void loadEmailData(Person parent, AcademicAppointeeType academicAppointeeType) {
+        emailAddresses = []
+//        academicAppointeeType.workerData.personalData.contactData.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
+//            Email email = new Email(parent, emailAddressData)
+//            this.emailAddresses.add(email)
+//        }
+
+        resetPrimaryEmailAddresses()
+    }
+
     void loadEmailData(Person parent, WorkerType workerType) {
         emailAddresses = []
-        workerType.workerData.personalData.contactData.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
+        this.emailAddressData = workerType.workerData.personalData.contactData.emailAddressData
+        this.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
             Email email = new Email(parent, emailAddressData)
             this.emailAddresses.add(email)
         }
@@ -31,32 +93,32 @@ trait EmailAddresses {
         // if there is no primary work email select the first work email available
         if (!workEmail) {
             workEmail = emailAddresses.find { !it.delete && "WORK".equalsIgnoreCase(it.usageType) }
-            if(workEmail) workEmail.isPrimary = true
+            if (workEmail) workEmail.isPrimary = true
         }
 
         if (!personalEmail) {
             personalEmail = emailAddresses.find { !it.delete && "HOME".equalsIgnoreCase(it.usageType) }
-            if(personalEmail) personalEmail.isPrimary = true
+            if (personalEmail) personalEmail.isPrimary = true
         }
     }
 
     void setWorkEmail(Email workEmail) {
-        if(this.workEmail && this.workEmail != workEmail) {
+        if (this.workEmail && this.workEmail != workEmail) {
             this.workEmail.isPrimary = false
         }
         this.@workEmail = workEmail
-        if(workEmail) {
+        if (workEmail) {
             this.workEmail.isPrimary = true
             this.workEmail.primaryChanged = true
         }
     }
 
     void setPersonalEmail(Email personalEmail) {
-        if(this.personalEmail && this.personalEmail != personalEmail) {
+        if (this.personalEmail && this.personalEmail != personalEmail) {
             this.personalEmail.isPrimary = false
         }
         this.@personalEmail = personalEmail
-        if(personalEmail) {
+        if (personalEmail) {
             this.personalEmail.isPrimary = true
             this.personalEmail.primaryChanged = true
         }
@@ -95,7 +157,7 @@ trait EmailAddresses {
     }
 
     Email getEmailByAddress(String address) {
-        Email email = emailAddresses.find {it.address.equalsIgnoreCase(address) && !it.delete}
+        Email email = emailAddresses.find { it.address.equalsIgnoreCase(address) && !it.delete }
         return email
     }
 
@@ -104,7 +166,7 @@ trait EmailAddresses {
             throw new Exception("Email is not valid, errors: " + email.errors)
         }
 
-        if(getEmailByAddress(email.address)) {
+        if (getEmailByAddress(email.address)) {
             throw new Exception("Email address already exists")
         }
 
