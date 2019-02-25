@@ -43,7 +43,14 @@ class Worker implements Person, EmailAddresses {
         worker = workerType
         descriptor = worker.getWorkerDescriptor()
         List<WorkerObjectIDType> ids = workerType.workerReference.ID
-        wid = ids.find { it.type == "WID" }.value
+        ids.each {WorkerObjectIDType id ->
+            if(id.type.equalsIgnoreCase("wid")) {
+                wid = id.value
+            }
+            else {
+                referenceIds.put(id.type, id.value)
+            }
+        }
         if (workerType?.workerData?.personalData?.nameData?.legalNameData?.nameDetailData) {
             legalName = new LegalName(wid, workerType.workerData.personalData.nameData.legalNameData.nameDetailData)
         }
