@@ -40,16 +40,9 @@ class AcademicAppointee implements Person {
         this.academicAppointeeType = academicAppointeeType
         PersonNameDetailDataType name = academicAppointeeType.academicAppointeeData.personData.legalNameData.nameDetailData
         descriptor = name.formattedName
-        List<AcademicAppointeeEnabledObjectIDType> ids = academicAppointeeType.academicAppointeeReference.id.first()
-        ids.each {AcademicAppointeeEnabledObjectIDType id ->
-            if(id.type.equalsIgnoreCase("wid")) {
-                wid = id.value
-            }
-            else {
-                referenceIds.put(id.type, id.value)
-            }
-        }
-//        wid = ids.find {it.type == "WID"}.value
+
+        setIds(academicAppointeeType.academicAppointeeReference.id.first())
+
         legalName = new LegalName(wid, name)
         name = academicAppointeeType.academicAppointeeData.personData.preferredNameData.nameDetailData
         preferredName = new PreferredName(wid, name)
