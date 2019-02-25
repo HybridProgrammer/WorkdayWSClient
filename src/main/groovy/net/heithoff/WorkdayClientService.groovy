@@ -7,6 +7,8 @@ import workday.com.bsvc.UniversalIdentifierObjectIDType
 import workday.com.bsvc.WorkerObjectIDType
 import workday.com.bsvc.human_resources.HumanResourcesPort
 import workday.com.bsvc.human_resources.HumanResourcesService
+import workday.com.bsvc.integrations.IntegrationsPort
+import workday.com.bsvc.integrations.IntegrationsService
 
 import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
@@ -61,23 +63,40 @@ class WorkdayClientService {
         def resources
         switch (service) {
             case "Human_Resources":
-                resources = prePareHR(service)
-                break;
+                resources = prepareHR(service)
+                break
+            case "Integrations":
+                resources = prepareIntegrations(service)
         }
 
         return resources
     }
 
-    private def prePareHR(String serviceName) {
-        def resources = [:]
-        String wdEndpoint = getServiceUrl(serviceName)
+    private def prepareIntegrations(String serviceName) {
+        // Create the Web Service client stub
+        IntegrationsService service = new IntegrationsService()
+        IntegrationsPort port = service.getIntegrations()
 
-        log.debug("Starting...")
+        LinkedHashMap resources = configureWdConnection(serviceName, port, service)
 
+        return resources
+    }
+
+    private def prepareHR(String serviceName) {
         // Create the Web Service client stub
         HumanResourcesService service = new HumanResourcesService()
         HumanResourcesPort port = service.getHumanResources()
 
+        LinkedHashMap resources = configureWdConnection(serviceName, port, service)
+
+        return resources
+    }
+
+    private LinkedHashMap configureWdConnection(String serviceName, def port, def service) {
+        def resources = [:]
+        String wdEndpoint = getServiceUrl(serviceName)
+
+        log.debug("Starting...")
         // Add the WorkdayCredentials handler to the client stub
         WorkdayCredentials.addWorkdayCredentials((BindingProvider) port, wdUser, wdPassword)
 
@@ -88,8 +107,7 @@ class WorkdayClientService {
         resources.put("service", service)
         resources.put("port", port)
         resources.put("requestContext", requestContext)
-
-        return resources
+        resources
     }
 
     ResponseFilterType getDefaultResponseFilterType(BigDecimal page) {

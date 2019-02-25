@@ -63,6 +63,32 @@ class WorkerITSpec extends Specification {
         worker1 == worker2 // only checks wid, this may change in the future
     }
 
+    def "test update refenceIds"() {
+        when: "we want to search by WID"
+        String wid = App.properties().get("test2.worker.wid.id").toString()
+        Worker worker1 = Worker.findById(wid)
+        println worker1
+
+        then:
+        worker1
+
+        when: "add a new reference id"
+        String existingEmployeeId = worker1.referenceIds.get("Employee_ID")
+        worker1.updateRefenceId("Employee_ID", wid)
+        boolean value = worker1.save()
+        Worker worker2 = Worker.findById(wid)
+
+        then:
+        value
+        worker2.referenceIds.get("Employee_ID") == wid
+
+        when: "roll back changes"
+        worker1.updateRefenceId("Employee_ID", existingEmployeeId)
+
+        then:
+        worker1.save()
+    }
+
     def "test update legal names"() {
         given:
         String wid = App.properties().get("test2.worker.wid.id").toString()

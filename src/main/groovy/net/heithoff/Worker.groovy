@@ -199,6 +199,8 @@ class Worker implements Person, EmailAddresses {
 
         saveEmails(wid)
 
+        saveReferenceIds()
+
         return true
     }
 

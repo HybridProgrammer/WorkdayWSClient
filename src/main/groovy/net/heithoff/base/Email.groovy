@@ -72,6 +72,10 @@ class Email {
     }
 
     static boolean save(List<EmailAddressInformationDataType> emailInfo, String parentWid) {
+        if(emailInfo.size() <= 0) {
+            return true
+        }
+
         WorkdayClientService workdayClientService = WorkdayClientService.workdayClientService
         MaintainContactInformationForPersonEventRequestType request = new MaintainContactInformationForPersonEventRequestType()
         request.version = workdayClientService.version
