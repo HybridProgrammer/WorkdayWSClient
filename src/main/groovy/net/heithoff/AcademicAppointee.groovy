@@ -138,6 +138,8 @@ class AcademicAppointee implements Person {
             }
         }
 
+        saveReferenceIds()
+
         return true
     }
 

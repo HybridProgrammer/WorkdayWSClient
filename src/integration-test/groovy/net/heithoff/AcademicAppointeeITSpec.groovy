@@ -54,6 +54,32 @@ class AcademicAppointeeITSpec extends Specification {
         affiliate1 == affiliate2 // only checks wid, this may change in the future
     }
 
+    def "test update refenceIds"() {
+        when: "we want to search by WID"
+        String wid = App.properties().get("test2.acadmeicAppointee.wid.id").toString()
+        AcademicAppointee affiliate1 = AcademicAppointee.findById(wid)
+        println affiliate1
+
+        then:
+        affiliate1
+
+        when: "add a new reference id"
+        String existingEmployeeId = affiliate1.referenceIds.get("Academic_Affiliate_ID")
+        affiliate1.updateRefenceId("Academic_Affiliate_ID", wid)
+        boolean value = affiliate1.save()
+        AcademicAppointee affiliate2 = AcademicAppointee.findById(wid)
+
+        then:
+        value
+        affiliate2.referenceIds.get("Academic_Affiliate_ID") == wid
+
+        when: "roll back changes"
+        affiliate1.updateRefenceId("Academic_Affiliate_ID", existingEmployeeId)
+
+        then:
+        affiliate1.save()
+    }
+
     def "test update legal names"() {
         given:
         String wid = App.properties().get("test2.acadmeicAppointee.wid.id").toString()
