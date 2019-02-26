@@ -86,6 +86,7 @@ wsdl2java {
                           ['src/main/resources/wsdl/Integrations.wsdl'],
                           ['src/main/resources/wsdl/Student_Recruiting.wsdl'],
                           ['src/main/resources/wsdl/Admissions.wsdl'],
+                          ['src/main/resources/wsdl/Academic_Foundation.wsdl'],
                           //['-xjc','-b','bindingfile.xml','src/main/resources/wsdl/secondwsdl.wsdl']
     ]
     locale = Locale.US

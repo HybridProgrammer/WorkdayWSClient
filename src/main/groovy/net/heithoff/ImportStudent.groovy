@@ -9,6 +9,7 @@ import workday.com.bsvc.AdmissionsCounselorObjectType
 import workday.com.bsvc.EducationalInterestObjectIDType
 import workday.com.bsvc.EducationalInterestObjectType
 import workday.com.bsvc.ImportStudentApplicationsRequestType
+import workday.com.bsvc.ImportStudentPersonalInformationRequestType
 import workday.com.bsvc.ImportStudentRecruitingRatingAssignmentRequestType
 import workday.com.bsvc.ImportStudentRecruitmentRequestType
 import workday.com.bsvc.LocationObjectIDType
@@ -19,6 +20,8 @@ import workday.com.bsvc.SourceDetailObjectType
 import workday.com.bsvc.StudentApplicationHVType
 import workday.com.bsvc.StudentApplicationObjectIDType
 import workday.com.bsvc.StudentApplicationObjectType
+import workday.com.bsvc.StudentPersonalInformationDataType
+import workday.com.bsvc.StudentPersonalInformationType
 import workday.com.bsvc.StudentPreliminaryAwardSubeditDataType
 import workday.com.bsvc.StudentProspectSourceObjectType
 import workday.com.bsvc.StudentProspectStageObjectIDType
@@ -138,5 +141,16 @@ class ImportStudent {
         StudentApplicationHVType student = new StudentApplicationHVType()
         student.studentApplicationData = new StudentRecruitmentDataW25Type()
         student.studentApplicationData.studentProspectStageReference = new StudentProspectStageObjectType()
+    }
+
+    def Import_Student_Personal_Information() {
+        ImportStudentPersonalInformationRequestType request = new ImportStudentPersonalInformationRequestType()
+        StudentPersonalInformationType studentPersonalInformation = new StudentPersonalInformationType()
+        StudentPersonalInformationDataType studentPersonalInformationDataType = new StudentPersonalInformationDataType()
+        studentPersonalInformationDataType.studentID
+        studentPersonalInformationDataType.studentPersonData.contactInformationData
+        studentPersonalInformationDataType.studentPersonData.personNameData
+        studentPersonalInformation.studentData.add(studentPersonalInformationDataType)
+        request.student.add()
     }
 }
