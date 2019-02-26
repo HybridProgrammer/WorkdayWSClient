@@ -8,6 +8,7 @@ import workday.com.bsvc.AdmissionsCounselorObjectIDType
 import workday.com.bsvc.AdmissionsCounselorObjectType
 import workday.com.bsvc.EducationalInterestObjectIDType
 import workday.com.bsvc.EducationalInterestObjectType
+import workday.com.bsvc.ImportStudentApplicationsRequestType
 import workday.com.bsvc.ImportStudentRecruitingRatingAssignmentRequestType
 import workday.com.bsvc.ImportStudentRecruitmentRequestType
 import workday.com.bsvc.LocationObjectIDType
@@ -15,6 +16,7 @@ import workday.com.bsvc.LocationObjectType
 import workday.com.bsvc.RegionObjectType
 import workday.com.bsvc.SourceDetailObjectIDType
 import workday.com.bsvc.SourceDetailObjectType
+import workday.com.bsvc.StudentApplicationHVType
 import workday.com.bsvc.StudentApplicationObjectIDType
 import workday.com.bsvc.StudentApplicationObjectType
 import workday.com.bsvc.StudentPreliminaryAwardSubeditDataType
@@ -129,5 +131,12 @@ class ImportStudent {
 
         student.studentRecruitmentData.expectedAvailability = expectedAvailability
         request.studentRecruitment.add(student)
+    }
+
+    def Import_Student_Applications() {
+        ImportStudentApplicationsRequestType request = new ImportStudentRecruitmentRequestType()
+        StudentApplicationHVType student = new StudentApplicationHVType()
+        student.studentApplicationData = new StudentRecruitmentDataW25Type()
+        student.studentApplicationData.studentProspectStageReference = new StudentProspectStageObjectType()
     }
 }
