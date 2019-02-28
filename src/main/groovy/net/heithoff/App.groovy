@@ -1,7 +1,5 @@
 package net.heithoff
 
-import org.apache.log4j.BasicConfigurator
-
 class App {
     static Map properties
     static ConfigObject configObject
@@ -20,7 +18,6 @@ class App {
             configObject = new ConfigSlurper().parse(file.toURI().toURL())
             properties = configObject.flatten()
         }
-        BasicConfigurator.configure() //Todo - Fix/Document how to log! Why is this so difficult? Honestly hate logging and their crap documentation. Rant Over!
     }
 
     static Map properties() {

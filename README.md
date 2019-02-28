@@ -72,3 +72,25 @@ Run with to see soap messages
 -Djavax.net.debug=all
 
 ```
+
+## Logging
+Create a file called log4j.prorperties
+
+```$xslt
+log4j.rootLogger=DEBUG, stdout
+
+# A1 is set to be a ConsoleAppender.
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.out
+
+log4j.logger.net.heithoff=DEBUG
+
+# A1 uses PatternLayout.
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n
+```
+
+Use the following JVM settings when running
+```$xslt
+-Dlog4j.debug -Dlog4j.configuration=file:/path/to/log4j.properties
+```
