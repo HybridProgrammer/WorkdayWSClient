@@ -94,3 +94,9 @@ Use the following JVM settings when running
 ```$xslt
 -Dlog4j.debug -Dlog4j.configuration=file:/path/to/log4j.properties
 ```
+
+
+# How to build
+```$xslt
+./gradlew build -x integrationTest
+```

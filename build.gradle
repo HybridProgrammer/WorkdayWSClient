@@ -79,8 +79,6 @@ wsdl2javaExt {
 }
 
 wsdl2java {
-    generatedWsdlDir = file("workday-generated-sources")  // target directory for generated source code
-    wsdlDir = file("src/main/resources/wsdl") // define to support incremental build
     wsdlsToGenerate = [   //  2d-array of wsdls and cxf-parameters
                           ['https://community.workday.com/sites/default/files/file-hosting/productionapi/Human_Resources/v31.2/Human_Resources.wsdl'],
                           ['https://community.workday.com/sites/default/files/file-hosting/productionapi/Integrations/v31.2/Integrations.wsdl'],
