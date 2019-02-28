@@ -17,7 +17,7 @@ plugins {
 }
 
 group 'net.heithoff'
-version '1.0-SNAPSHOT'
+version '1.1-SNAPSHOT'
 description 'WorkdayWSClient is a library that aims to simplify the use of Workday Web Services'
 
 sourceCompatibility = 1.8
@@ -82,8 +82,8 @@ wsdl2java {
     generatedWsdlDir = file("workday-generated-sources")  // target directory for generated source code
     wsdlDir = file("src/main/resources/wsdl") // define to support incremental build
     wsdlsToGenerate = [   //  2d-array of wsdls and cxf-parameters
-                          ['src/main/resources/wsdl/Human_Resources.wsdl'],
-                          ['src/main/resources/wsdl/Integrations.wsdl'],
+                          ['https://community.workday.com/sites/default/files/file-hosting/productionapi/Human_Resources/v31.2/Human_Resources.wsdl'],
+                          ['https://community.workday.com/sites/default/files/file-hosting/productionapi/Integrations/v31.2/Integrations.wsdl'],
                           //['-xjc','-b','bindingfile.xml','src/main/resources/wsdl/secondwsdl.wsdl']
     ]
     locale = Locale.US
