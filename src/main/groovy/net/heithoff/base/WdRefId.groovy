@@ -12,7 +12,7 @@ import workday.com.bsvc.WorkerObjectIDType
 import workday.com.bsvc.integrations.IntegrationsPort
 
 @Slf4j
-trait Person {
+trait WdRefId {
     String wid
     Map<String, String> referenceIds = [:]
     Map<String, String> dirtyReferenceIds = [:]

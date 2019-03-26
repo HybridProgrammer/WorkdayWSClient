@@ -8,7 +8,7 @@ trait EmailAddresses {
     Email personalEmail
     List<Email> emailAddresses
 
-    void loadEmailData(Person parent, WorkerType workerType) {
+    void loadEmailData(WdRefId parent, WorkerType workerType) {
         emailAddresses = []
         workerType.workerData.personalData.contactData.emailAddressData.each { EmailAddressInformationDataType emailAddressData ->
             Email email = new Email(parent, emailAddressData)

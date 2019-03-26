@@ -12,7 +12,7 @@ import workday.com.bsvc.human_resources.HumanResourcesPort
 @Slf4j
 @AutoClone
 class Email {
-    Person person
+    WdRefId person
     String wid
     String address
     String usageType
@@ -34,7 +34,7 @@ class Email {
         delete = false
     }
 
-    Email(Person person, EmailAddressInformationDataType emailAddressData) {
+    Email(WdRefId person, EmailAddressInformationDataType emailAddressData) {
         this.person = person
         if(emailAddressData.emailReference) {
             List<EmailReferenceObjectIDType> ids = emailAddressData.emailReference.ID

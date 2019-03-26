@@ -3,7 +3,7 @@ package net.heithoff
 import groovy.util.logging.Slf4j
 import net.heithoff.base.EmailAddresses
 import net.heithoff.base.LegalName
-import net.heithoff.base.Person
+import net.heithoff.base.WdRefId
 import net.heithoff.base.PreferredName
 import net.heithoff.services.WorkdayClientService
 import workday.com.bsvc.BusinessProcessParametersType
@@ -26,7 +26,7 @@ import javax.xml.datatype.DatatypeConfigurationException
 import javax.xml.datatype.DatatypeFactory
 
 @Slf4j
-class Worker implements Person, EmailAddresses {
+class Worker implements WdRefId, EmailAddresses {
     static final WorkdayClientService workdayClientService = WorkdayClientService.getWorkdayClientService()
     WorkerType worker
     Boolean dirty
