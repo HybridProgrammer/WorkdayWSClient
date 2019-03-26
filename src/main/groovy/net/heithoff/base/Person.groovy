@@ -2,7 +2,7 @@ package net.heithoff.base
 
 import groovy.util.logging.Slf4j
 import net.heithoff.Exceptions.NotImplementedException
-import net.heithoff.WorkdayClientService
+import net.heithoff.services.WorkdayClientService
 import workday.com.bsvc.AcademicAppointeeEnabledObjectIDType
 import workday.com.bsvc.PutReferenceRequestType
 import workday.com.bsvc.PutReferenceResponseType

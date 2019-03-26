@@ -1,7 +1,7 @@
 package net.heithoff.base
 
 import groovy.util.logging.Slf4j
-import net.heithoff.WorkdayClientService
+import net.heithoff.services.WorkdayClientService
 import net.heithoff.traits.Name
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort

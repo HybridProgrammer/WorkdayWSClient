@@ -4,7 +4,7 @@ import groovy.transform.AutoClone
 import groovy.util.logging.Slf4j
 import net.heithoff.AcademicAppointee
 import net.heithoff.App
-import net.heithoff.WorkdayClientService
+import net.heithoff.services.WorkdayClientService
 import net.heithoff.Worker
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort

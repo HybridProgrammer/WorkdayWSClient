@@ -1,6 +1,7 @@
 package net.heithoff
 
 import net.heithoff.base.Email
+import net.heithoff.services.WorkdayClientService
 import org.junit.Ignore
 import org.junit.experimental.categories.Category
 import spock.lang.Specification

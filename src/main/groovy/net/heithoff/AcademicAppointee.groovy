@@ -4,6 +4,7 @@ import groovy.util.logging.Slf4j
 import net.heithoff.base.LegalName
 import net.heithoff.base.Person
 import net.heithoff.base.PreferredName
+import net.heithoff.services.WorkdayClientService
 import workday.com.bsvc.*
 import workday.com.bsvc.human_resources.HumanResourcesPort
 

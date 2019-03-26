@@ -1,6 +1,8 @@
-package net.heithoff
+package net.heithoff.services
 
 import groovy.util.logging.Slf4j
+import net.heithoff.App
+import net.heithoff.WorkdayCredentials
 import workday.com.bsvc.ResponseFilterType
 import workday.com.bsvc.RoleObjectIDType
 import workday.com.bsvc.UniversalIdentifierObjectIDType

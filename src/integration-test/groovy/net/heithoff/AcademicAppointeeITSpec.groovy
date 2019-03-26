@@ -1,5 +1,6 @@
 package net.heithoff
 
+import net.heithoff.services.WorkdayClientService
 import org.junit.experimental.categories.Category
 import spock.lang.Ignore
 import spock.lang.Specification

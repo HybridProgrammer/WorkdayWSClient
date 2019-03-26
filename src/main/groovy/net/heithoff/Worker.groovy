@@ -5,6 +5,7 @@ import net.heithoff.base.EmailAddresses
 import net.heithoff.base.LegalName
 import net.heithoff.base.Person
 import net.heithoff.base.PreferredName
+import net.heithoff.services.WorkdayClientService
 import workday.com.bsvc.BusinessProcessParametersType
 import workday.com.bsvc.ChangePersonalInformationBusinessProcessDataType
 import workday.com.bsvc.ChangePersonalInformationDataType
