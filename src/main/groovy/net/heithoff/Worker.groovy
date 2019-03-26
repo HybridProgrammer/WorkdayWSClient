@@ -201,6 +201,7 @@ class Worker implements Person, EmailAddresses {
 
         saveReferenceIds()
 
+        resetDirty()
         return true
     }
 

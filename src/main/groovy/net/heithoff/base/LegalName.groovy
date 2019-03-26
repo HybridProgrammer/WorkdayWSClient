@@ -51,6 +51,7 @@ class LegalName implements Name {
             throw e
         }
 
+        resetDirty()
         return true
     }
 }

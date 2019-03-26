@@ -53,6 +53,7 @@ class PreferredName implements Name {
             throw e
         }
 
+        resetDirty()
         return true
     }
 }
